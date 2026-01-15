@@ -132,7 +132,17 @@
   height: 32px;
   border-radius: 999px;
   background: #e0edff;
+  padding-top: 3px;
+  align-content: center;
+  text-align: center;
 }
+
+.card-icon{
+  padding-top: 3px;
+  align-content: center;
+  text-align: center;
+}
+
 
 .card-grid {
   display: grid;
@@ -213,4 +223,9 @@
   .card-grid {
     grid-template-columns: 1fr;
   }
+}
+
+i{
+  font-size: 20px;
+  color: #005DFFFF;
 }

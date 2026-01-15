@@ -14,7 +14,9 @@ function Login({ onNavigate }) {
         <section className="auth-form-panel">
           <div className="auth-form-card">
             <div className="auth-avatar">
-              <div className="auth-avatar-icon" />
+              <div className="auth-avatar-icon">
+                <i class="fa-solid fa-user-check"></i>
+              </div>
             </div>
             <h2>Welcome Back!</h2>
             <form

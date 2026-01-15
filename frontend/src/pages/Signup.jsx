@@ -14,7 +14,9 @@ function Signup({ onNavigate }) {
         <section className="auth-form-panel">
           <div className="auth-form-card">
             <div className="auth-avatar">
-              <div className="auth-avatar-icon" />
+              <div className="auth-avatar-icon">
+                <i class="fa-regular fa-user"></i>
+              </div>
             </div>
             <h2>Create Account</h2>
             <form
