@@ -1,4 +1,8 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
 import './Auth.css'
+
 
 function Signup({ onNavigate }) {
   return (
@@ -46,14 +50,7 @@ function Signup({ onNavigate }) {
               </button>
             </form>
             <p className="auth-footer-text">
-              Already have an account?{' '}
-              <button
-                type="button"
-                className="auth-link-button"
-                onClick={() => onNavigate('login')}
-              >
-                Login
-              </button>
+              Already have an account?{' '} <Link to="/login" className="auth-link-button"> Login </Link>
             </p>
           </div>
         </section>

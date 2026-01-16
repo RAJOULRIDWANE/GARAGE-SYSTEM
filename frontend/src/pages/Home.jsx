@@ -40,17 +40,17 @@ function Home({ onNavigate }) {
         </div>
       </section>
 
-      <section className="status-section">
+      <section className="status-section"  id="checkstatus-btn" >
         <div className="section-inner">
           <h2>Check Your Car Status</h2>
-          <p className="section-subtitle">
-            Enter your Track Number to check your car&apos;s service history,
+          <p className="section-subtitle" >
+            Enter your Track Number to check your car's service history,
             upcoming maintenance, and current status.
           </p>
           <div className="status-card">
             <div className="status-input-row">
               <input type="text" placeholder="Enter Track Number" />
-              <button type="button" className="btn-primary">
+              <button type="button" className="btn-primary" >
                 Check Status
               </button>
             </div>
