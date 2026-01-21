@@ -1,18 +1,11 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import "./Home.css";
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function Home({ onNavigate }) {
 
-  // Load Font Awesome directly into this JSX file
-  useEffect(() => {
-    if (!document.getElementById("fa-css")) {
-      const link = document.createElement("link");
-      link.id = "fa-css";
-      link.rel = "stylesheet";
-      link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css";
-      document.head.appendChild(link);
-    }
-  }, []);
+
 
   return (
     <main className="page-content home-page">
@@ -29,11 +22,9 @@ function Home({ onNavigate }) {
               Smooth rides start with smart maintenance – care for your car today!
             </p>
             <div className="hero-actions">
-              <button type="button" className="btn-primary" onClick={() => onNavigate('signup')}>
-                Get Started
+              <button type="button" className="btn-primary">  {' '} <Link to="/login"> Get Started </Link>
               </button>
-              <button type="button" className="btn-outline">
-                Call us now
+              <button type="button" className="btn-outline" > {' '} <Link to="/contact"> Call us now </Link>
               </button>
             </div>
           </div>
@@ -158,8 +149,7 @@ function Home({ onNavigate }) {
           
           </div>
           <div className="section-cta">
-            <button type="button" className="btn-primary" onClick={() => onNavigate('signup')}>
-              View all services
+            <button type="button" className="btn-primary"> {' '} <Link to="/services"> View all services </Link>
             </button>
           </div>
         </div>

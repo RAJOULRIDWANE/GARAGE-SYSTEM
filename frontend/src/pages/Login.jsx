@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import './Auth.css'
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function Login() { // removed unused {onNavigate} prop
   const [email, setEmail] = useState("");

@@ -1,50 +1,68 @@
 /* Main Contact Page Container */
 .contact-page {
   min-height: 100vh;
-  background: #f9fafb;
-  padding: 0;
-  padding-top: 80px;
+  background: #f3f4f6; /* Light gray background to match app */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Contact Header Section */
 .contact-header {
-  background: linear-gradient(135deg, #01011a 0%, #01011a 100%);
+  background: #1E3A8A; /* Brand Navy */
   color: white;
-  padding: 3rem 2rem;
+  padding: 4rem 2rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional: Adds a subtle shine/overlay effect like the Auth Hero */
+.contact-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 .contact-header-content {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .contact-header-content h1 {
-  font-size: 2.5rem;
+  font-size: 2.75rem;
   margin-bottom: 1rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .contact-header-content p {
-  font-size: 1.1rem;
-  opacity: 0.95;
+  font-size: 1.15rem;
+  opacity: 0.8;
   line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* Form Section */
 .contact-form-section {
-  padding: 3rem 2rem;
-  background: #f9fafb;
+  padding: 4rem 2rem;
+  margin-top: -3rem; /* Pulls content up slightly over the header */
 }
 
 .contact-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .contact-container h2 {
-  font-size: 2rem;
-  color: #1f2937;
+  font-size: 1.8rem;
+  color: #001532;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
@@ -52,34 +70,37 @@
 .form-description {
   color: #6b7280;
   margin-bottom: 2rem;
-  font-size: 1rem;
 }
 
 /* Success Message */
 .success-message {
-  background: #d1fae5;
-  border: 2px solid #6ee7b7;
+  background: #ecfdf5;
+  border: 1px solid #10b981;
   color: #065f46;
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   border-radius: 8px;
   margin-bottom: 2rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-weight: 500;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.success-message svg {
-  flex-shrink: 0;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Contact Form */
+/* Contact Form Card */
 .contact-form {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Matches the shadow from your Login card */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   margin-bottom: 3rem;
+  border: 1px solid #e5e7eb;
 }
 
 /* Form Group */
@@ -90,21 +111,29 @@
 .form-group label {
   display: block;
   font-weight: 600;
-  color: #1f2937;
+  color: #374151;
   margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
+.form-group textarea {
+  min-height: 150px;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+
+/* Input & Textarea Styling - Matches Auth Forms */
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.875rem;
-  border: 2px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 1rem;
   font-family: inherit;
-  transition: all 0.3s ease;
-  background: #f9fafb;
+  transition: all 0.2s ease;
+  background: #fff;
   box-sizing: border-box;
 }
 
@@ -116,48 +145,48 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #001532;
+  box-shadow: 0 0 7px 1px  #bbdefb;
 }
 
 /* Error States */
 .form-group input.error,
 .form-group textarea.error {
   border-color: #ef4444;
-  background: #fef2f2;
+  background: #fff5f5;
 }
 
 .form-group input.error:focus,
 .form-group textarea.error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
 }
 
 .error-message {
   color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.35rem;
-  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
   font-weight: 500;
 }
 
-/* Submit Button */
+/* Submit Button - Matches .btn-primary */
 .submit-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg,  #051043 100%);
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
 }
 
 .submit-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(1, 5, 23, 0.3);
+  background-color: #002352; /* Slightly lighter navy on hover */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 21, 50, 0.25);
 }
 
 .submit-button:active {
@@ -167,7 +196,7 @@
 /* Contact Info Grid */
 .contact-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
 }
@@ -175,16 +204,20 @@
 /* Contact Info Item */
 .contact-info-item {
   background: white;
-  padding: 2rem 1.5rem;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
   text-align: center;
   transition: all 0.3s ease;
 }
 
+.contact-info-item .info-icon i{
+  font-size: 30px;
+}
+
 .contact-info-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 /* Info Icon */
@@ -192,119 +225,53 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  width: 64px;
+  height: 64px;
+  background: #e0edff; 
   border-radius: 50%;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  color: #001532;
 }
 
-.info-icon svg {
-  width: 24px;
-  height: 24px;
+/* Force SVGs to match Brand Navy */
+.info-icon svg path {
+  fill: #001532; 
 }
 
 /* Contact Info Text */
 .contact-info-item h3 {
-  color: #001532;
+  color: #111827;
   margin-bottom: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .contact-info-item p {
   color: #6b7280;
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1.5;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .contact-page {
-    padding-top: 70px;
-  }
-
   .contact-header {
-    padding: 2rem 1rem;
+    padding: 3rem 1.5rem;
   }
 
   .contact-header-content h1 {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
-
-  .contact-header-content p {
-    font-size: 1rem;
-  }
-
+  
   .contact-form-section {
+    margin-top: 0;
     padding: 2rem 1rem;
   }
 
   .contact-form {
     padding: 1.5rem;
   }
-
-  .contact-container h2 {
-    font-size: 1.5rem;
-  }
-
+  
   .contact-info-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    padding: 0.75rem;
-    font-size: 16px;
-  }
-
-  .submit-button {
-    padding: 0.875rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .contact-page {
-    padding-top: 60px;
-  }
-
-  .contact-header {
-    padding: 1.5rem 1rem;
-  }
-
-  .contact-header-content h1 {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .contact-header-content p {
-    font-size: 0.95rem;
-  }
-
-  .contact-form-section {
-    padding: 1.5rem 1rem;
-  }
-
-  .contact-form {
-    padding: 1rem;
-  }
-
-  .contact-container h2 {
-    font-size: 1.25rem;
-  }
-
-  .form-group {
-    margin-bottom: 1.25rem;
-  }
-
-  .info-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .info-icon svg {
-    width: 20px;
-    height: 20px;
   }
 }

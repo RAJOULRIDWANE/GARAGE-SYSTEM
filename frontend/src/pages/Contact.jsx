@@ -1,5 +1,8 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import './Contact.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +21,7 @@ const Contact = () => {
       ...prevState,
       [name]: value
     }));
+    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -26,61 +30,83 @@ const Contact = () => {
     }
   };
 
+  // --- UPDATED VALIDATION LOGIC ---
   const validateForm = () => {
     const newErrors = {};
 
+    // 1. Name: Must be OVER 4 characters (5+)
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     } else if (/\d/.test(formData.name)) {
       newErrors.name = 'Name cannot contain numbers';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+    } else if (formData.name.trim().length <= 4) {
+      newErrors.name = 'Name must be over 4 characters';
     }
 
+    // 2. Email: Standard validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
 
+    // 3. Phone: Minimum 10 digits
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else {
       const digitsOnly = formData.phone.replace(/\D/g, '');
-      if (digitsOnly.length !== 10) {
-        newErrors.phone = 'Phone number must be exactly 10 digits';
+      if (digitsOnly.length < 10) {
+        newErrors.phone = 'Phone number must be at least 10 digits';
       } else if (!/^[\d\s\-+()]+$/.test(formData.phone)) {
         newErrors.phone = 'Phone number can only contain digits, spaces, and - + ( )';
       }
     }
 
+    // 4. Message: Must be OVER 25 characters (26+)
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
+    } else if (formData.message.trim().length <= 25) {
+      newErrors.message = 'Message must be over 25 characters';
     }
 
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      console.log('Form submitted:', formData);
-      setSubmitted(true);
-      
-      setTimeout(() => {
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          message: ''
-        });
-        setSubmitted(false);
-      }, 3000);
+      const dataToSend = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message
+      };
+
+      try {
+        const res = await axios.post('http://127.0.0.1:8000/api/contact', dataToSend);
+
+        if (res.data.status === 200) {
+          setSubmitted(true);
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            message: ''
+          });
+          
+          setTimeout(() => {
+            setSubmitted(false);
+          }, 3000);
+        }
+      } catch (err) {
+        console.error("Error sending message:", err);
+        if (err.response && err.response.data.errors) {
+            setErrors(err.response.data.errors);
+        }
+      }
     } else {
       setErrors(newErrors);
     }
@@ -148,7 +174,7 @@ const Contact = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="Enter your phone number (10 digits)"
+                placeholder="Enter your phone number (min 10 digits)"
                 className={errors.phone ? 'error' : ''}
               />
               {errors.phone && <span className="error-message">{errors.phone}</span>}
@@ -176,32 +202,26 @@ const Contact = () => {
           <div className="contact-info-grid">
             <div className="contact-info-item">
               <div className="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z" fill="#3B82F6"/>
-                </svg>
+                <i className="fa-solid fa-envelope"></i>
               </div>
               <h3>Email</h3>
-              <p>contact@garage.ma</p>
+              <p>contactpfe@garage.ma</p>
             </div>
 
             <div className="contact-info-item">
               <div className="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M6.62 10.79C8.06 13.62 10.38 15.94 13.21 17.38L15.41 15.18C15.69 14.9 16.08 14.82 16.43 14.93C17.55 15.3 18.75 15.5 20 15.5C20.55 15.5 21 15.95 21 16.5V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="#3B82F6"/>
-                </svg>
+                <i className="fa-solid fa-phone"></i>
               </div>
               <h3>Phone</h3>
-              <p>+212 5 12 34 56 78</p>
+              <p>+212 6 66 66 66 66</p>
             </div>
 
             <div className="contact-info-item">
               <div className="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#3B82F6"/>
-                </svg>
+                <i className="fa-solid fa-location-dot"></i>
               </div>
               <h3>Location</h3>
-              <p>AV.rue far 34, Rabat, Morocco</p>
+              <p>AV.rue 31, selouane, Nador, Morocco</p>
             </div>
           </div>
         </div>
