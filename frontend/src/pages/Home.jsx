@@ -1,11 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./Home.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function Home({ onNavigate }) {
-
-
+function Home() {
 
   return (
     <main className="page-content home-page">
@@ -22,32 +19,33 @@ function Home({ onNavigate }) {
               Smooth rides start with smart maintenance – care for your car today!
             </p>
             <div className="hero-actions">
-              <button type="button" className="btn-primary">  {' '} <Link to="/login"> Get Started </Link>
-              </button>
-              <button type="button" className="btn-outline" > {' '} <Link to="/contact"> Call us now </Link>
-              </button>
+              <Link to="/login" className="btn-primary">
+                Get Started
+              </Link>
+              <Link to="/contact" className="btn-outline">
+                Call us now
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="status-section"  id="checkstatus-btn" >
+      <section className="status-section" id="checkstatus-btn">
         <div className="section-inner">
           <h2>Check Your Car Status</h2>
-          <p className="section-subtitle" >
+          <p className="section-subtitle">
             Enter your Track Number to check your car's service history,
             upcoming maintenance, and current status.
           </p>
           <div className="status-card">
             <div className="status-input-row">
               <input type="text" placeholder="Enter Track Number" />
-              <button type="button" className="btn-primary" >
+              <button type="button" className="btn-primary">
                 Check Status
               </button>
             </div>
 
             <div className="status-options">
-            
               <div className="status-pill">
                 <div className="status-icon">
                   <i className="fa-regular fa-clock"></i>
@@ -68,7 +66,6 @@ function Home({ onNavigate }) {
                 </div>
                 <span>Recall Alert</span>
               </div>
-            
             </div>
           </div>
         </div>
@@ -83,7 +80,6 @@ function Home({ onNavigate }) {
           </p>
 
           <div className="card-grid">
-          
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-oil-can"></i>
@@ -109,7 +105,7 @@ function Home({ onNavigate }) {
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-gauge-high"></i>
-                </div>
+              </div>
               <h3>Engine Diagnostics</h3>
               <p>
                 Computer diagnostics to quickly detect and resolve engine issues.
@@ -119,7 +115,7 @@ function Home({ onNavigate }) {
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-car"></i>
-                </div>
+              </div>
               <h3>Tire Services</h3>
               <p>
                 Rotation, balancing, alignment, and replacement for maximum
@@ -140,17 +136,18 @@ function Home({ onNavigate }) {
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-fan"></i>
-                </div>
+              </div>
               <h3>A/C Services</h3>
               <p>
                 Inspection, recharge, and repair to keep your cabin comfortable.
               </p>
             </article>
-          
           </div>
+
           <div className="section-cta">
-            <button type="button" className="btn-primary"> {' '} <Link to="/services"> View all services </Link>
-            </button>
+            <Link to="/services" className="btn-primary">
+              View all services
+            </Link>
           </div>
         </div>
       </section>
@@ -165,28 +162,28 @@ function Home({ onNavigate }) {
           <div className="card-grid">
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <i className="fa-solid fa-screwdriver-wrench"></i>
               </div>
               <h3>Expert Mechanics</h3>
               <p>Certified technicians with years of experience.</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-hourglass-end"></i>
+                <i className="fa-solid fa-hourglass-end"></i>
               </div>
               <h3>Fast Turnaround</h3>
               <p>Quick diagnostics and services to save you time.</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-shield-halved"></i>  
+                <i className="fa-solid fa-shield-halved"></i>  
               </div>
               <h3>Secure Warranty</h3>
               <p>Reliable warranty coverage on all major services.</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-dollar-sign"></i>
+                <i className="fa-solid fa-dollar-sign"></i>
               </div>
               <h3>Affordable Pricing</h3>
               <p>Transparent pricing with no hidden fees.</p>

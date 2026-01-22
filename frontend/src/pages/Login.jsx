@@ -4,7 +4,7 @@ import axios from "axios";
 import './Auth.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function Login() { // removed unused {onNavigate} prop
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -61,14 +61,14 @@ function Login() { // removed unused {onNavigate} prop
             {/* Display Error Message here */}
             {error && <p style={{color: 'red', textAlign: 'center'}}>{error}</p>}
 
-            <form className="auth-form" onSubmit={handleLogin}> {/* <--- CONNECTED HERE */}
+            <form className="auth-form" onSubmit={handleLogin}>
               <label className="auth-field">
                 <span>Email</span>
                 <input 
                   type="email" 
                   placeholder="Enter your email" 
-                  value={email} // <--- CONNECTED HERE
-                  onChange={(e) => setEmail(e.target.value)} // <--- CONNECTED HERE
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </label>
@@ -77,15 +77,16 @@ function Login() { // removed unused {onNavigate} prop
                 <input 
                   type="password" 
                   placeholder="Enter your password" 
-                  value={password} // <--- CONNECTED HERE
-                  onChange={(e) => setPassword(e.target.value)} // <--- CONNECTED HERE
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </label>
               
               <div className="auth-extra-row">
-                <button type="button" className="auth-link-button small">  {' '} <Link to="/forgot-password">  Forgot password? </Link>
-                </button>
+                <Link to="/forgot-password" className="auth-link-button small">
+                  Forgot password?
+                </Link>
               </div>
               
               <button type="submit" className="btn-primary auth-submit">
@@ -95,7 +96,7 @@ function Login() { // removed unused {onNavigate} prop
 
             <p className="auth-footer-text">
               Don't have an account?{" "} 
-              <Link to="/signup" className="auth-link-button"> Sign up </Link>
+              <Link to="/signup" className="auth-link-button">Sign up</Link>
             </p>
           </div>
         </section>
