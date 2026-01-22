@@ -84,8 +84,7 @@ function Login() { // removed unused {onNavigate} prop
               </label>
               
               <div className="auth-extra-row">
-                <button type="button" className="auth-link-button small">
-                  Forgot password?
+                <button type="button" className="auth-link-button small">  {' '} <Link to="/forgot-password">  Forgot password? </Link>
                 </button>
               </div>
               

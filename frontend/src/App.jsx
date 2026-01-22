@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'
 import Contact from './pages/Contact.jsx' 
 import About from './pages/About.jsx' 
 import Services from './pages/Services.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx';
 import './App.css'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
 
       <Footer />
