@@ -141,7 +141,12 @@
   padding-top: 3px;
   align-content: center;
   text-align: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #e0edff;
 }
+
 
 
 .card-grid {
@@ -168,12 +173,7 @@
   color: #6b7280;
 }
 
-.card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  background: #e0edff;
-}
+
 
 .section-cta {
   margin-top: 2rem;

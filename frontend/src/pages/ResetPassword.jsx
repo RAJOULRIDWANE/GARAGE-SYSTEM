@@ -48,7 +48,9 @@ function ResetPassword() {
     <div className="forgot-password-page">
       <div className="auth-card">
         <div className="auth-header">
-          <i className="fa-solid fa-key icon-lock"></i>
+          <div className="info-icon" style={{ width: '70px', height: '70px'}}>
+            <i className="fa-solid fa-key icon-lock" style={{ fontSize: '45px'}}></i>
+          </div>
           <h1>Set New Password</h1>
           <p>Create a strong password for your account.</p>
         </div>
@@ -63,7 +65,8 @@ function ResetPassword() {
             <input 
               type="password" 
               className="form-input"
-              value={password} 
+              value={password}
+              placeholder='Set New Password'
               onChange={(e) => setPassword(e.target.value)} 
               required 
             />
@@ -75,6 +78,7 @@ function ResetPassword() {
               type="password" 
               className="form-input"
               value={confirmPassword} 
+              placeholder='Confirm New Password'
               onChange={(e) => setConfirmPassword(e.target.value)} 
               required 
             />
@@ -83,9 +87,7 @@ function ResetPassword() {
           <button type="submit" className="submit-button">Reset Password</button>
         </form>
         
-        <div className="auth-footer">
-             <Link to="/login" className="back-to-login">Back to Login</Link>
-        </div>
+
       </div>
     </div>
   );

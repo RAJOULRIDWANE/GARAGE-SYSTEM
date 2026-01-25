@@ -11,10 +11,10 @@ function Login() { // removed unused {onNavigate} prop
   
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    console.log("Attempting login with:", email); // Debug log
+    setError(""); 
+    console.log("Attempting login with:", email); 
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login', {
@@ -22,19 +22,47 @@ function Login() { // removed unused {onNavigate} prop
         password: password
       });
 
-      // Save token
-      localStorage.setItem('ACCESS_TOKEN', response.data.token);
-      localStorage.setItem('USER_DATA', JSON.stringify(response.data.user));
+      console.log("Login Data:", response.data); // See what we got
 
-      console.log("Logged in!", response.data);
-      navigate('/'); // Redirect to Home
+      const token = response.data.token;
+      const user = response.data.user; // The object containing name, email, role, etc.
+
+      // --- 1. CLEAR OLD DATA ---
+      // Good practice to clear old junk before saving new stuff
+      localStorage.clear(); 
+
+      // --- 2. SAVE TOKEN ---
+      localStorage.setItem('ACCESS_TOKEN', token);
+
+      // --- 3. SAVE USER DETAILS INDIVIDUALLY ---
+      // This loop grabs every key (name, email, id) and saves it separately
+      // Example: localStorage.getItem('name') will return "Ala As"
+      Object.keys(user).forEach(key => {
+          localStorage.setItem(key, user[key]);
+      });
+
+      // (Optional) Explicitly save USER_ROLE again just to be 100% safe for the Bouncer
+      // Since the loop above probably saved 'role', this is just insurance.
+      localStorage.setItem('USER_ROLE', user.role); 
+
+
+      // --- 4. REDIRECT ---
+      if (user.role === 'client') {
+        navigate('/client-dashboard');
+      } else if (user.role === 'supervisor') {
+        navigate('/admin-dashboard'); 
+      } else if (user.role === 'mechanic') {
+        navigate('/mechanic-dashboard'); // <--- ADD THIS LINE
+      }else {
+        navigate('/'); 
+      }
 
     } catch (err) {
       console.error(err);
       if (err.response) {
         setError(err.response.data.message || "Login failed");
       } else {
-        setError("Network error. Is Laravel running?");
+        setError("Network error. Is Laravel running?"); 
       }
     }
   };

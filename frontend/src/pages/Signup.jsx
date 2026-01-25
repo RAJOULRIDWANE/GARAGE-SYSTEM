@@ -4,7 +4,82 @@ import axios from "axios";
 import './Auth.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function Signup({ onNavigate }) {
+function Signup() {
+  const navigate = useNavigate();
+
+  // 1. State for form data
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '' // Laravel requires this exact name
+  });
+
+  // 2. State for feedback
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // 3. Handle Input Changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    // Clear errors when user types to make UI feel responsive
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
+  };
+
+  // 4. Handle Form Submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setGeneralError('');
+    setLoading(true);
+
+    try {
+      // --- API CALL ---
+      // We assume standard users are 'client'. 
+      // If you updated AuthController to accept roles, you can add role: 'client' here.
+      const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
+
+      console.log("Signup Success:", response.data);
+
+      // --- AUTO LOGIN LOGIC ---
+      // Save the data immediately so they don't have to log in again
+      const token = response.data.token;
+      const user = response.data.user;
+
+      localStorage.setItem('ACCESS_TOKEN', token);
+      
+      // Save role specifically for the ProtectedRoute
+      // New signups are usually clients by default
+      localStorage.setItem('USER_ROLE', user.role || 'client'); 
+      
+      // Save individual fields (clean storage pattern)
+      Object.keys(user).forEach(key => {
+        localStorage.setItem(key, user[key]);
+      });
+
+      // --- REDIRECT ---
+      navigate('/client-dashboard');
+
+    } catch (err) {
+      console.error("Signup Error:", err);
+      setLoading(false);
+
+      if (err.response && err.response.status === 422) {
+        // Validation Errors (e.g., Email taken, passwords don't match)
+        setErrors(err.response.data.errors);
+      } else {
+        // Network or Server Errors
+        setGeneralError("Something went wrong. Is the server running?");
+      }
+    }
+  };
+
   return (
     <main className="page-content auth-page">
       <div className="auth-inner">
@@ -15,42 +90,93 @@ function Signup({ onNavigate }) {
             <p>Create your account and bring us your vehicle!</p>
           </div>
         </section>
+        
         <section className="auth-form-panel">
           <div className="auth-form-card">
             <div className="auth-avatar">
               <div className="auth-avatar-icon">
-                <i class="fa-regular fa-user"></i>
+                <i className="fa-regular fa-user"></i>
               </div>
             </div>
+            
             <h2>Create Account</h2>
-            <form
-              className="auth-form"
-              onSubmit={(e) => {
-                e.preventDefault()
-              }}
-            >
+            
+            {/* General Error Message */}
+            {generalError && (
+              <div style={{ color: 'red', textAlign: 'center', marginBottom: '10px' }}>
+                {generalError}
+              </div>
+            )}
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              
+              {/* NAME */}
               <label className="auth-field">
                 <span>Full Name</span>
-                <input type="text" placeholder="Enter your full name" />
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter your full name" 
+                  required
+                />
+                {errors.name && <small style={{color:'red'}}>{errors.name[0]}</small>}
               </label>
+
+              {/* EMAIL */}
               <label className="auth-field">
                 <span>Email</span>
-                <input type="email" placeholder="Enter your email" />
+                <input 
+                  type="email" 
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email" 
+                  required
+                />
+                {errors.email && <small style={{color:'red'}}>{errors.email[0]}</small>}
               </label>
+
+              {/* PASSWORD */}
               <label className="auth-field">
                 <span>Password</span>
-                <input type="password" placeholder="Create a password" />
+                <input 
+                  type="password" 
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Create a password" 
+                  required
+                />
+                {errors.password && <small style={{color:'red'}}>{errors.password[0]}</small>}
               </label>
+
+              {/* CONFIRM PASSWORD */}
               <label className="auth-field">
                 <span>Confirm Password</span>
-                <input type="password" placeholder="Confirm your password" />
+                <input 
+                  type="password" 
+                  name="password_confirmation"
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
+                  placeholder="Confirm your password" 
+                  required
+                />
               </label>
-              <button type="submit" className="btn-primary auth-submit">
-                Sign up
+
+              <button 
+                type="submit" 
+                className="btn-primary auth-submit"
+                disabled={loading}
+              >
+                {loading ? 'Creating Account...' : 'Sign up'}
               </button>
             </form>
+
             <p className="auth-footer-text">
-              Already have an account?{' '} <Link to="/login" className="auth-link-button"> Login </Link>
+              Already have an account?{' '} 
+              <Link to="/login" className="auth-link-button"> Login </Link>
             </p>
           </div>
         </section>
@@ -59,4 +185,4 @@ function Signup({ onNavigate }) {
   )
 }
 
-export default Signup
+export default Signup;
