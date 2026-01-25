@@ -16,7 +16,9 @@ class AuthController extends Controller
         $fields = $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|confirmed'
+            'password' => 'required|string|confirmed',
+            'role' => 'sometimes|string|in:client,mechanic,supervisor,receptionist,parts_manager'
+            
         ]);
 
         // Create the user in the database
@@ -24,6 +26,7 @@ class AuthController extends Controller
             'name' => $fields['name'],
             'email' => $fields['email'],
             'password' => Hash::make($fields['password']),
+            'role' => $request->role ?? 'client',
         ]);
 
         // Create a token for this user

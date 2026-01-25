@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactDetailsController;
 use App\Http\Controllers\Api\ForgotPasswordController;
-
+use App\Http\Controllers\Api\VehicleController;
 
     Route::post('/register', [AuthController::class, 'register']);
    
@@ -30,7 +30,9 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
-
+    Route::get('/vehicles', [VehicleController::class, 'index']);
+    Route::post('/vehicles', [VehicleController::class, 'store']);
+    
     Route::get('/user', function (Request $request) {
         return $request->user();
     })->middleware('auth:sanctum');
