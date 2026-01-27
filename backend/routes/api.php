@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactDetailsController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\VehicleController;
+use App\Http\Controllers\Api\MechanicController;
+use App\Http\Controllers\Api\ClientController;
 
     Route::post('/register', [AuthController::class, 'register']);
    
@@ -33,6 +35,13 @@ use App\Http\Controllers\Api\VehicleController;
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::post('/vehicles', [VehicleController::class, 'store']);
     
+    Route::get('/mechanic/jobs', [MechanicController::class, 'getMyRepairs']);
+    Route::patch('/mechanic/jobs/{id}', [MechanicController::class, 'updateStatus']);
+
+
+    Route::get('/client/vehicles', [ClientController::class, 'index']);
+
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     })->middleware('auth:sanctum');

@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
+import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
 import './App.css'
 
 const ProtectedRoute = ({ allowedRoles }) => {
@@ -80,6 +81,11 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['mechanic']} />}>
           <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
         </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+          <Route path="/receptionist-dashboard" element={<ReceptionistDashboard />} />
+        </Route>
+
 
       </Routes>
 
