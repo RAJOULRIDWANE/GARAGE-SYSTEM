@@ -6,9 +6,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules;
+
 
 class AuthController extends Controller
 {
+
+
     // 1. REGISTER USER
     public function register(Request $request)
     {
@@ -63,6 +67,37 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'token' => $token
+        ], 200);
+    }
+
+
+    public function changePassword(Request $request)
+    {
+        // 1. Validate the input
+        // 'confirmed' checks if 'newPassword' matches 'newPassword_confirmation'
+        $request->validate([
+            'currentPassword' => 'required',
+            'newPassword'     => ['required', 'confirmed', 'min:6'],
+        ]);
+
+        // 2. Get the currently authenticated user
+        $user = $request->user();
+
+        // 3. Check if the Current Password matches the database
+        if (!Hash::check($request->currentPassword, $user->password)) {
+            return response()->json([
+                'message' => 'The provided current password is incorrect.'
+            ], 400); // Bad Request
+        }
+
+        // 4. Update the password
+        $user->update([
+            'password' => Hash::make($request->newPassword)
+        ]);
+
+        // 5. Return success
+        return response()->json([
+            'message' => 'Password updated successfully!'
         ], 200);
     }
 

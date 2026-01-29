@@ -26,6 +26,10 @@ return new class extends Migration
             $table->text('description'); // Client complaint: "Engine making noise"
             $table->text('mechanic_notes')->nullable(); // Mechanic report: "Fixed spark plug"
             $table->decimal('cost', 10, 2)->default(0.00); // Price
+            $table->dateTime('date_entry')->nullable(); // When it arrived
+            $table->date('date_end')->nullable();       // The deadline
+            $table->string('invoice_number')->nullable(); // For "INV-XXXX"
+
             
             $table->timestamps();
         });

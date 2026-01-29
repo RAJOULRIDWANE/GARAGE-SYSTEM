@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,10 +12,11 @@ class Repair extends Model
     protected $fillable = [
         'vehicle_id',
         'mechanic_id',
-        'status',
+        'status',          // Pending, Processing, Completed
         'description',
         'mechanic_notes',
-        'cost'
+        'cost',
+        'date_end',        // Added: Predicted completion date
     ];
 
     public function vehicle()

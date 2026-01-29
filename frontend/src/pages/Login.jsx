@@ -40,7 +40,6 @@ const handleLogin = async (e) => {
       Object.keys(user).forEach(key => {
           localStorage.setItem(key, user[key]);
       });
-
       // (Optional) Explicitly save USER_ROLE again just to be 100% safe for the Bouncer
       // Since the loop above probably saved 'role', this is just insurance.
       localStorage.setItem('USER_ROLE', user.role); 
@@ -48,12 +47,16 @@ const handleLogin = async (e) => {
 
       // --- 4. REDIRECT ---
       if (user.role === 'client') {
-        navigate('/client-dashboard');
+        navigate('/client/dashboard');
       } else if (user.role === 'supervisor') {
-        navigate('/admin-dashboard'); 
+        navigate('/supervisor/dashboard'); 
       } else if (user.role === 'mechanic') {
-        navigate('/mechanic-dashboard'); // <--- ADD THIS LINE
-      }else {
+        navigate('/mechanic/dashboard'); // <--- ADD THIS LINE
+      } else if (user.role === 'receptionist') {
+        navigate('/receptionist/dashboard');
+      } else if (user.role === 'parts_manager') {
+        navigate('/partsmanager/dashboard');
+      } else {
         navigate('/'); 
       }
 

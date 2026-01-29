@@ -12,6 +12,9 @@ import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
 import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
+import PartsManagerDashboard from './PartsManager-Pages/PartsManagerDashboard.jsx';
+import SupervisorDashboard from './Supervisor-Pages/SupervisorDashboard.jsx';
+import UserProfile from './pages/UserProfile.jsx';
 import './App.css'
 
 const ProtectedRoute = ({ allowedRoles }) => {
@@ -43,17 +46,14 @@ function App() {
     '/unauthorized'
   ];
 
-  // 4. Check: Is the current path in the list? (OR is it the reset-password page?)
   const showLayout = publicRoutes.includes(location.pathname) || location.pathname.startsWith('/reset-password');
 
   return (
     <div className="app-root">
       
-      {/* 5. The Switch: Only show Navbar if showLayout is true */}
       {showLayout && <Navbar />} 
 
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
@@ -63,7 +63,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        {/* Unauthorized Page */}
         <Route path="/unauthorized" element={
           <div style={{padding: '50px', textAlign: 'center', color: 'red'}}>
             <h2>Access Denied</h2>
@@ -71,21 +70,46 @@ function App() {
           </div>
         } />
 
-        {/* --- PROTECTED ROUTES --- */}
-        {/* Navbar/Footer will automatically HIDE here because they are not in 'publicRoutes' */}
-        
-        <Route element={<ProtectedRoute allowedRoles={['client']} />}>
-          <Route path="/client-dashboard" element={<ClientDashboard />} />
+
+        <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
+          <Route path="/client/dashboard" element={<ClientDashboard />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['mechanic']} />}>
-          <Route path="/mechanic-dashboard" element={<MechanicDashboard />} />
+        <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
+          <Route path="/client/profile" element={<UserProfile />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
+          <Route path="/mechanic/dashboard" element={<MechanicDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
+          <Route path="/mechanic/profile" element={<UserProfile />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
+          <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
+          <Route path="/supervisor/profile" element={<UserProfile />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
-          <Route path="/receptionist-dashboard" element={<ReceptionistDashboard />} />
+          <Route path="/receptionist/dashboard" element={<ReceptionistDashboard />} />
         </Route>
 
+        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+          <Route path="/receptionist/profile" element={<UserProfile />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute allowedRoles={['parts_manager', 'Parts_manager']} />}>
+          <Route path="/partsmanager/dashboard" element={<PartsManagerDashboard />} />
+        </Route>
+
+         <Route element={<ProtectedRoute allowedRoles={['parts_manager', 'Parts_manager']} />}>
+          <Route path="/partsmanager/profile" element={<UserProfile />} />
+        </Route>
 
       </Routes>
 
