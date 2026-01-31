@@ -361,6 +361,18 @@ tr:hover {
     gap: 15px;
     flex: 1;
     border: 3px solid #e2e8f0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    
+    /* Flex settings for side-by-side layout */
+    display: flex;
+    flex-direction: row;       /* Forces horizontal alignment */
+    /* justify-content: space-between; Pushes Text to left, Icon to right */
+    align-items: center;       /* Centers them vertically */
+    
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .kpi-icon {

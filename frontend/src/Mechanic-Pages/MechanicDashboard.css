@@ -1,0 +1,360 @@
+/* --- 1. Global Layout & Fonts --- */
+.dashboard-container {
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #ffffff; 
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+.dashboard-container .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 95%;
+}
+
+/* --- 2. Section Headers --- */
+.section-header {
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
+
+.section-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827; /* Dark almost black */
+    margin: 0;
+}
+
+.section-header p {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* --- 3. KPI Cards (Top Row) --- */
+/* Matches the "Today's Tasks", "Tasks Finished" cards */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    
+    /* Flex settings for side-by-side layout */
+    display: flex;
+    flex-direction: row;       /* Forces horizontal alignment */
+    justify-content: space-between; /* Pushes Text to left, Icon to right */
+    align-items: center;       /* Centers them vertically */
+    
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card .orange i{
+    color: #fb5607;
+}
+.stat-card .green i{
+    color: #57cc99;
+}
+.stat-card .blue i{
+    color: #2979ff;
+}
+
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-info span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280; /* Gray text */
+    margin-bottom: 8px;
+}
+
+.stat-info h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1;
+}
+
+/* The Round Icons */
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Specific Colors from your Image */
+.stat-icon.blue {
+    background-color: #e0f2fe; /* Light Blue BG */
+    color: #0ea5e9;           /* Blue Icon */
+}
+
+.stat-icon.green {
+    background-color: #dcfce7; /* Light Green BG */
+    color: #22c55e;           /* Green Icon */
+}
+
+.stat-icon.orange {
+    background-color: #ffedd5; /* Light Orange BG */
+    color: #f97316;           /* Orange Icon */
+}
+
+
+/* --- 4. Task List Container --- */
+/* That large white box surrounding the list in your image */
+.tasks-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.tasks-section .section-header h2 {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+/* --- 5. The Task Item Cards --- */
+/* Each row (Engine Diagnostics, Oil Change, etc.) */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.task-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Keeps status aligned with text */
+    transition: box-shadow 0.2s;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Left Side Typography */
+.task-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* "Engine Diagnostics" */
+.task-details h3 {
+    margin: 0;
+    font-size: 1rem; 
+    font-weight: 700;
+    color: #111827;
+}
+
+/* "volkswagen Golf 8" */
+.task-details .car-model {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151; /* Slightly lighter black */
+    margin-top: 4px;
+}
+
+/* "Client : Hamza..." */
+.task-details .client-name {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #6b7280; /* Gray */
+    margin-top: 2px;
+}
+
+
+.task-details i{
+    color: #2979ff;
+    font-size: 14px;
+}
+
+
+
+.task-action {
+    display: flex;
+    align-items: center;
+}
+
+.task-action label {
+    display: none !important; /* Hide "Current Status" label to match image */
+}
+
+.status-dropdown {
+    appearance: none;          /* Hides default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    font-size: 0.75rem;        /* Small text like image */
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 6px 16px;         /* Pill padding */
+    border-radius: 50px;       /* Perfect rounded pill */
+    background-color: transparent; /* Transparent center */
+    cursor: pointer;
+    text-align: center;
+    min-width: 100px;
+    transition: all 0.2s ease;
+}
+
+.status-dropdown.completed {
+    border: 1px solid #34d399; 
+    color: #059669;           
+}
+
+.status-dropdown.progress,
+.status-dropdown.in-progress {
+    border: 1px solid #60a5fa; 
+    color: #2563eb;           
+}
+
+.status-dropdown.pending {
+    border: 1px solid #fb923c; 
+    color: #ea580c;           
+}
+
+.status-dropdown:hover {
+    background-color: #f9fafb;
+}
+
+/* --- 7. Responsive Fixes --- */
+@media (max-width: 600px) {
+    .task-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .task-action {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+
+/* --- Professional Custom Dropdown --- */
+
+.custom-dropdown-wrapper {
+    position: relative; /* Anchors the absolute menu */
+    display: inline-block;
+}
+
+/* The Trigger Pill */
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 25px 5px 25px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    justify-content: space-between;
+}
+
+.dropdown-trigger.pending { border: 1px solid #fb923c; color: #ea580c; }
+.dropdown-trigger.progress { border: 1px solid #60a5fa; color: #2563eb; }
+.dropdown-trigger.completed { border: 1px solid #34d399; color: #059669; }
+
+/* Hover effect for trigger */
+.dropdown-trigger:hover {
+    background-color: #f9fafb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* The Rotating Arrow */
+.dropdown-trigger .arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+.dropdown-trigger .arrow.open {
+    transform: rotate(180deg);
+}
+
+/* The Floating Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 115%; /* Slight gap below trigger */
+    right: 0;
+    width: 180px;
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50; /* Ensures it sits on top of other content */
+    padding: 6px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Menu Items */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+    transition: background 0.1s;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6;
+}
+
+.dropdown-item.active:first-child {
+    background-color: #ffedd5;
+    color: #ea580c;
+}
+
+
+.dropdown-item.active:nth-child(2) {
+    background-color: #e0f2fe;
+    color: #1d4ed8;
+}
+
+.dropdown-item.active:last-child {
+    background-color: #dcfce7;
+    color: #059669;
+}
+
+
+.pending-text { color: #ea580c; }
+.progress-text { color: #2563eb; }
+.completed-text { color: #059669; }
+
+.check-icon {
+    margin-left: auto; /* Pushes check to far right */
+    color: #2563eb;
+    font-size: 0.8rem;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

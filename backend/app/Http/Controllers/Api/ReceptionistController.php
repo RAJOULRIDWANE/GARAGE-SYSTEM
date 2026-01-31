@@ -24,7 +24,7 @@ class ReceptionistController extends Controller
 
         // 3. Return Response
         return response()->json([
-            'user' => Auth::user(), // ✅ 2. FIXED: Uses Auth Facade (No underline)
+            'user' => Auth::user(), 
             'mechanics' => $mechanics,
             'repairs' => $repairs
         ]);
