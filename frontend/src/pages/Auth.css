@@ -107,12 +107,25 @@
   color: #6b7280;
 }
 
+
+
 .auth-field input {
   width: 100%;
   border-radius: 999px;
   border: 1px solid #d0d7e6;
   padding: 0.65rem 1rem;
   font-size: 0.95rem;
+}
+
+.auth-field .eye-button{
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: black;
 }
 
 .auth-extra-row {
@@ -163,3 +176,4 @@
     padding-inline: 1.75rem;
   }
 }
+

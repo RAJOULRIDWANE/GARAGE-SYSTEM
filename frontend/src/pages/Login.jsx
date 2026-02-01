@@ -4,14 +4,17 @@ import axios from "axios";
 import './Auth.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function Login() { // removed unused {onNavigate} prop
+function Login() { 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   
+  // --- ADDED STATE FOR VISIBILITY ---
+  const [showPassword, setShowPassword] = useState(false); 
+  
   const navigate = useNavigate();
 
-const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError(""); 
     console.log("Attempting login with:", email); 
@@ -22,13 +25,12 @@ const handleLogin = async (e) => {
         password: password
       });
 
-      console.log("Login Data:", response.data); // See what we got
+      console.log("Login Data:", response.data); 
 
       const token = response.data.token;
-      const user = response.data.user; // The object containing name, email, role, etc.
+      const user = response.data.user; 
 
       // --- 1. CLEAR OLD DATA ---
-      // Good practice to clear old junk before saving new stuff
       localStorage.clear(); 
 
       // --- 2. SAVE TOKEN ---
@@ -38,7 +40,6 @@ const handleLogin = async (e) => {
       Object.keys(user).forEach(key => {
           localStorage.setItem(key, user[key]);
       });
-      // Since the loop above probably saved 'role', this is just insurance.
       localStorage.setItem('USER_ROLE', user.role); 
 
 
@@ -48,7 +49,7 @@ const handleLogin = async (e) => {
       } else if (user.role === 'supervisor') {
         navigate('/supervisor/dashboard'); 
       } else if (user.role === 'mechanic') {
-        navigate('/mechanic/dashboard'); // <--- ADD THIS LINE
+        navigate('/mechanic/dashboard'); 
       } else if (user.role === 'receptionist') {
         navigate('/receptionist/dashboard');
       } else if (user.role === 'parts_manager') {
@@ -89,30 +90,43 @@ const handleLogin = async (e) => {
             {/* Display Error Message here */}
             {error && <p style={{color: 'red', textAlign: 'center'}}>{error}</p>}
 
-            <form className="auth-form" onSubmit={handleLogin}> {/* <--- CONNECTED HERE */}
+            <form className="auth-form" onSubmit={handleLogin}> 
               <label className="auth-field">
                 <span>Email</span>
                 <input 
                   type="email" 
                   placeholder="Enter your email" 
-                  value={email} // <--- CONNECTED HERE
-                  onChange={(e) => setEmail(e.target.value)} // <--- CONNECTED HERE
-                  required
-                />
-              </label>
-              <label className="auth-field">
-                <span>Password</span>
-                <input 
-                  type="password" 
-                  placeholder="Enter your password" 
-                  value={password} // <--- CONNECTED HERE
-                  onChange={(e) => setPassword(e.target.value)} // <--- CONNECTED HERE
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
                   required
                 />
               </label>
               
+              <label className="auth-field">
+                <span>Password</span>
+                {/* --- ADDED WRAPPER FOR RELATIVE POSITIONING --- */}
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showPassword ? "text" : "password"} // TOGGLE TYPE HERE
+                    placeholder="Enter your password" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required
+                    style={{ paddingRight: '40px' }} // Make space for the icon
+                  />
+                  {/* --- ADDED TOGGLE BUTTON --- */}
+                  <button 
+                    type="button" 
+                    className="eye-button"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <i className={showPassword ? "ri-eye-line" : "ri-eye-close-line"}></i>
+                  </button>
+                </div>
+              </label>
+              
               <div className="auth-extra-row">
-                <button type="button" className="auth-link-button small">  {' '} <Link to="/forgot-password">  Forgot password? </Link>
+                <button type="button" className="auth-link-button small">   {' '} <Link to="/forgot-password">  Forgot password? </Link>
                 </button>
               </div>
               

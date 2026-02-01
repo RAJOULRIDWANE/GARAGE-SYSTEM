@@ -8,6 +8,7 @@ import Contact from './pages/Contact.jsx'
 import About from './pages/About.jsx' 
 import Services from './pages/Services.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import 'remixicon/fonts/remixicon.css';
 import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';

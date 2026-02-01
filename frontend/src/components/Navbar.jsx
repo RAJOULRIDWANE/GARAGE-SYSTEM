@@ -38,7 +38,7 @@ function Navbar() {
         
         <Link className="navbar-left" to="/">
           <div className="navbar-logo-mark" />
-          <span className="navbar-logo-text">Logo</span>
+          <span className="navbar-logo-text">GARAGE PFE</span>
         </Link>
 
         <nav className="navbar-links">
