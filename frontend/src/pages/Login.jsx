@@ -35,12 +35,9 @@ const handleLogin = async (e) => {
       localStorage.setItem('ACCESS_TOKEN', token);
 
       // --- 3. SAVE USER DETAILS INDIVIDUALLY ---
-      // This loop grabs every key (name, email, id) and saves it separately
-      // Example: localStorage.getItem('name') will return "Ala As"
       Object.keys(user).forEach(key => {
           localStorage.setItem(key, user[key]);
       });
-      // (Optional) Explicitly save USER_ROLE again just to be 100% safe for the Bouncer
       // Since the loop above probably saved 'role', this is just insurance.
       localStorage.setItem('USER_ROLE', user.role); 
 

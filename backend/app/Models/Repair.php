@@ -12,11 +12,11 @@ class Repair extends Model
     protected $fillable = [
         'vehicle_id',
         'mechanic_id',
-        'status',          // Pending, Processing, Completed
+        'status',          
         'description',
         'mechanic_notes',
         'cost',
-        'date_end',        // Added: Predicted completion date
+        'date_end',        
     ];
 
     public function vehicle()
