@@ -112,6 +112,11 @@
     color: #9ca3af;
 }
 
+.story-image-placeholder img{
+    height: 346px;
+    border-radius: 12px;
+}
+
 .placeholder-content {
     display: flex;
     flex-direction: column;
