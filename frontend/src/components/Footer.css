@@ -24,13 +24,19 @@
 }
 
 .footer-logo-mark {
-  width: 32px;
-  height: 32px;
+  width: 47px;
+  height: 47px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #4b6cff, #27c2ff);
+  background: #bde0fe;
 }
 
+.footer-logo-mark .logo{
+  margin-left: 1px;
+}
+
+
 .footer-logo-text {
+  font-family: 'Poppins', sans-serif;
   font-weight: 700;
   color: #1b2559;
 }
@@ -46,11 +52,25 @@
   color: #6b7280;
 }
 
-.footer-column a {
+.footer-column .link {
   display: block;
   margin-bottom: 0.4rem;
   font-size: 0.9rem;
   color: #4b5563;
+  transition: 0.3s ease;
+}
+
+.footer-column .link:hover {
+  color: #005DFFFF;
+}
+
+.Services2{
+  margin-top: 34px;
+}
+
+.Services1 {
+  display: flex;
+  gap: 30px;
 }
 
 .footer-bottom {

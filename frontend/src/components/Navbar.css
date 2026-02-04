@@ -24,16 +24,23 @@
 }
 
 .navbar-logo-mark {
-  width: 32px;
-  height: 32px;
+  width: 47px;
+  height: 47px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #4b6cff, #27c2ff);
+  background: #bde0fe;
 }
 
+.navbar-logo-mark .logo{
+  margin-left: 1px;
+}
+
+
 .navbar-logo-text {
+  font-family: 'Poppins', sans-serif;
   font-weight: 700;
   font-size: 1.1rem;
   color: #1b2559;
+
 }
 
 .navbar-links {

@@ -114,13 +114,12 @@ function Login() {
                     required
                     style={{ paddingRight: '40px' }} // Make space for the icon
                   />
-                  {/* --- ADDED TOGGLE BUTTON --- */}
                   <button 
                     type="button" 
                     className="eye-button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    <i className={showPassword ? "ri-eye-line" : "ri-eye-close-line"}></i>
+                    <i className={showPassword ? "ri-eye-close-line" : "ri-eye-line"}></i>
                   </button>
                 </div>
               </label>

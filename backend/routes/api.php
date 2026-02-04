@@ -60,7 +60,13 @@ use App\Http\Controllers\Api\ReceptionistController;
         // Job Operations
         Route::post('/jobs', [ReceptionistController::class, 'storeJob']);
         Route::delete('/jobs/{id}', [ReceptionistController::class, 'deleteJob']);
+
+        Route::get('/clients-summary', [ReceptionistController::class, 'getClientsWithRepairs']);
+        Route::get('/client/{id}/repairs', [ReceptionistController::class, 'getClientRepairs']);
+
     });
+
+
 
 
 

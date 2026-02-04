@@ -1,5 +1,6 @@
-import './Navbar.css'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import MECHANIC from "../../public/images/MECHANIC.png";
+import './Navbar.css'
 
 function Navbar() { 
   const location = useLocation(); // To check which page we are on
@@ -37,8 +38,10 @@ function Navbar() {
       <div className="navbar-inner">
         
         <Link className="navbar-left" to="/">
-          <div className="navbar-logo-mark" />
-          <span className="navbar-logo-text">GARAGE PFE</span>
+          <div className="navbar-logo-mark">
+            <img src={MECHANIC} alt="MecaPro logo" className="logo"/>
+          </div>
+          <span className="navbar-logo-text"> MecaPro </span>
         </Link>
 
         <nav className="navbar-links">
@@ -64,15 +67,6 @@ function Navbar() {
           > 
             Contact 
           </NavLink>
-
-          {/* UPDATE: Use onClick to trigger our smart scroll function */}
-          <Link 
-            className="nav-link" 
-            to="/#checkstatus-btn" 
-            onClick={handleScrollToTracking}
-          > 
-            Tracking 
-          </Link>
 
         </nav>
 

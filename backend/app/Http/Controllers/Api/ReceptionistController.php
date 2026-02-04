@@ -4,29 +4,35 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // ✅ 1. ADD THIS IMPORT
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Repair;
+use App\Http\Resources\RepairResource; // <--- THIS IS THE FIX
 
 class ReceptionistController extends Controller
 {
     public function dashboard()
     {
-        // 1. Get Mechanics
+        // 1. Get Mechanics (Specific columns only)
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
-                         ->get(['id', 'name']);
+                        ->get(['id', 'name']);
 
-        // 2. Get Repairs
+        // 2. Get Repairs with Eager Loading
+        // We use 'with' to prevent N+1 queries (Double Request issue)
         $repairs = Repair::with(['vehicle.client', 'mechanic'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // 3. Return Response
+        // 3. Return Response using the Resource Filter
         return response()->json([
-            'user' => Auth::user(), 
+            'user' => [
+                'name' => Auth::user()->name, // Only send name and role
+                'role' => Auth::user()->role
+            ], 
             'mechanics' => $mechanics,
-            'repairs' => $repairs
+            // This transforms the data using the filter we created
+            'repairs' => RepairResource::collection($repairs) 
         ]);
     }
 
@@ -52,6 +58,7 @@ class ReceptionistController extends Controller
 
     public function storeJob(Request $request)
     {
+        // 1. Validate
         $validated = $request->validate([
             'vehicle_id' => 'required',
             'mechanic_id' => 'required',
@@ -60,6 +67,7 @@ class ReceptionistController extends Controller
             'date_end' => 'required|date'
         ]);
 
+        // 2. Create
         $repair = Repair::create([
             'vehicle_id' => $validated['vehicle_id'],
             'mechanic_id' => $validated['mechanic_id'],
@@ -70,8 +78,17 @@ class ReceptionistController extends Controller
             'date_end' => $validated['date_end'],
             'invoice_number' => 'INV-' . strtoupper(uniqid()), 
         ]);
+        
+        // 3. Load Relationships (IMPORTANT)
+        // The RepairResource needs 'vehicle' and 'mechanic' to work.
+        // Since we just created this repair, they aren't loaded yet.
+        $repair->load(['vehicle.client', 'mechanic']);
 
-        return response()->json(['message' => 'Created', 'repair' => $repair]);
+        // 4. Return Resource
+        return response()->json([
+            'message' => 'Created', 
+            'repair' => new RepairResource($repair) // <--- Use Resource here too
+        ]);
     }
 
     public function deleteJob($id)
@@ -82,5 +99,35 @@ class ReceptionistController extends Controller
              return response()->json(['message' => 'Deleted']);
          }
          return response()->json(['message' => 'Not found'], 404);
+    }
+    // --- NEW: Main Dashboard (Grouped by Client) ---
+    public function getClientsWithRepairs()
+    {
+        // Fetch users who have at least one repair
+        $clients = User::whereHas('repairs')
+            ->withCount('repairs') // Adds a 'repairs_count' column
+            ->with(['vehicles'])   // Optional: if you want to show vehicle count too
+            ->get();
+
+        return response()->json($clients);
+    }
+
+    // --- NEW: Drill-Down (Specific Client Repairs) ---
+    public function getClientRepairs($clientId)
+    {
+        $client = User::findOrFail($clientId);
+
+        // Fetch repairs ONLY for this client
+        $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
+                $q->where('user_id', $clientId);
+            })
+            ->with(['vehicle', 'mechanic']) // Eager load for speed
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'client' => $client,
+            'repairs' => RepairResource::collection($repairs) // Reuse your Resource!
+        ]);
     }
 }

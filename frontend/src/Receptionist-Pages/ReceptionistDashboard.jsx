@@ -8,6 +8,14 @@ import "./ReceptionistDashboard.css";
 const ReceptionistDashboard = () => {
   const navigate = useNavigate();
 
+
+
+const [groupedClients, setGroupedClients] = useState([]);
+const [viewMode, setViewMode] = useState('clients'); // 'clients' or 'repairs'
+const [selectedClientRepairs, setSelectedClientRepairs] = useState([]);
+const [currentClientName, setCurrentClientName] = useState('');
+
+
   const [user, setUser] = useState({ 
     name: localStorage.getItem('USER_NAME') || 'Receptionist', 
     role: localStorage.getItem('USER_ROLE') || 'Receptionist' 
@@ -43,34 +51,36 @@ const ReceptionistDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
+const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem('ACCESS_TOKEN');
-      const res = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (res.data.user) {
-          const userData = {
-            name: res.data.user.name,
-            role: res.data.user.role
-          };
-          setUser(userData);
-          localStorage.setItem('USER_NAME', userData.name);
-          localStorage.setItem('USER_ROLE', userData.role);
-      }
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        
+        // Fetch the Grouped Clients List
+        const res = await axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setGroupedClients(res.data);
 
-      setRepairs(res.data.repairs || []);
-      setMechanics(res.data.mechanics || []);
+        // Fetch Mechanics (for the add modal)
+        const mechRes = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
+             headers: { Authorization: `Bearer ${token}` }
+        });
+        setMechanics(mechRes.data.mechanics || []);
 
-    } catch (err) {
-      console.error("Error fetching dashboard:", err);
-      if(err.response && err.response.status === 401) {
-          localStorage.clear();
-          navigate('/login'); 
-      }
-    }
-  };
+    } catch (err) { console.error(err); }
+};
+
+const handleClientClick = async (clientId) => {
+    try {
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        const res = await axios.get(`http://127.0.0.1:8000/api/receptionist/client/${clientId}/repairs`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setSelectedClientRepairs(res.data.repairs);
+        setCurrentClientName(res.data.client.name);
+        setViewMode('repairs'); // Switch view
+    } catch (err) { console.error(err); }
+};
 
   const handleLogout = async () => {
       try {
@@ -221,6 +231,7 @@ const getFilteredRepairs = () => {
       }
   };
 
+  
 
   const handleDownloadInvoice = (invoice, clientName, vehicleInfo, jobCost) => {
     
@@ -373,67 +384,73 @@ const getFilteredRepairs = () => {
          </div>
       )}
 
-      <div className="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Customer / Vehicle</th>
-              <th>Service</th>
-              <th>Mechanic</th>
-              <th>Cost</th>
-              <th>Start Date</th> 
-              <th>Est. End Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRepairs.length > 0 ? (
-                filteredRepairs.map(job => (
-                <tr key={job.id}>
-                    <td>
-                        <strong>{job.vehicle?.client?.name || 'Unknown'}</strong>
-                        <span className="sub-text">
-                            {job.vehicle?.make} {job.vehicle?.model}
-                        </span>
-                    </td>
-                    <td>{job.description}</td>
-                    <td>{job.mechanic ? job.mechanic.name : 'Unassigned'}</td>
-                    <td>{job.cost} MAD</td>
-                    <td>{new Date(job.created_at).toLocaleString('en-GB', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                      })}
-                    </td>
-                    
-                    <td>
-                      {job.date_end ? (
-                        new Date(job.date_end).toLocaleString('en-GB', {
-                          day: '2-digit', month: '2-digit', year: 'numeric',
-                          hour: '2-digit', minute: '2-digit'
-                        })
-                      ) : (
-                        <span style={{color: '#94a3b8', fontStyle: 'italic'}}>TBD</span> 
-                      )}
-                    </td>
 
-                    <td><span className={`status-badge ${job.status}`}>{job.status}</span></td>
-                    <td>
-                        <button className="action-btn invoice-btn" onClick={() => handleDownloadInvoice(job.invoice, job.vehicle?.client?.name, `${job.vehicle?.make} ${job.vehicle?.model}`, job.cost)}>
-                          <i class="fa-solid fa-file-arrow-down"></i>
-                        </button>
-                        <button className="action-btn delete-btn" onClick={() => handleDelete(job.id)}>
-                          <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </td>
-                </tr>
-                ))
+
+
+      <div className="table-card">
+            {viewMode === 'clients' ? (
+                // --- VIEW 1: CLIENTS TABLE ---
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Total Vehicles</th>
+                            <th>Total Repairs History</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {groupedClients.map(client => (
+                            <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client.id)}>
+                                <td>
+                                    <strong>{client.name}</strong>
+                                    <div className="sub-text">{client.email}</div>
+                                </td>
+                                <td>{client.vehicles?.length || 0} Vehicles</td>
+                                <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
+                                <td>
+                                    <button className="action-btn view-btn">
+                                        <i className="fa-solid fa-eye"></i> View History
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             ) : (
-                <tr><td colSpan="8" style={{textAlign: "center", padding: "20px"}}>No appointments found matching your filters.</td></tr>
+                // --- VIEW 2: REPAIRS TABLE (The Drill-Down) ---
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Service</th>
+                            <th>Mechanic</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {selectedClientRepairs.map(job => (
+                            <tr key={job.id}>
+                                <td>{job.vehicle?.make} {job.vehicle?.model} ({job.vehicle?.plate})</td>
+                                <td>{job.description}</td>
+                                <td>{job.mechanic ? job.mechanic.name : 'Unassigned'}</td>
+                                <td>{job.cost} MAD</td>
+                                <td><span className={`status-badge ${job.status}`}>{job.status}</span></td>
+                                <td>
+                                    {/* Existing Invoice/Delete Buttons */}
+                                    <button className="action-btn invoice-btn" onClick={() => handleDownloadInvoice(job.invoice_number, currentClientName, "", job.cost)}>
+                                        <i className="fa-solid fa-file-arrow-down"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
-          </tbody>
-        </table>
-      </div>
+        </div>
+
 
       {showModal && (
         <div className="modal-overlay">
@@ -475,7 +492,7 @@ const getFilteredRepairs = () => {
                   </div>
                   <div className="form-group" style={{flex:1}}>
                     <label>Cost (MAD) :</label>
-                    <input type="number" className="form-control" value={formData.cost} onChange={e => setFormData({...formData, cost: e.target.value})}/>
+                    <input type="number" min="0" className="form-control" value={formData.cost} onChange={e => setFormData({...formData, cost: e.target.value})}/>
                   </div>
               </div>
               <div className="modal-actions">

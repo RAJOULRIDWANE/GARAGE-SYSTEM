@@ -31,49 +31,6 @@ function Home({ onNavigate }) {
         </div>
       </section>
 
-      <section className="status-section"  id="checkstatus-btn" >
-        <div className="section-inner">
-          <h2>Check Your Car Status</h2>
-          <p className="section-subtitle" >
-            Enter your Track Number to check your car's service history,
-            upcoming maintenance, and current status.
-          </p>
-          <div className="status-card">
-            <div className="status-input-row">
-              <input type="text" placeholder="Enter Track Number" />
-              <button type="button" className="btn-primary" >
-                Check Status
-              </button>
-            </div>
-
-            <div className="status-options">
-            
-              <div className="status-pill">
-                <div className="status-icon">
-                  <i className="fa-regular fa-clock"></i>
-                </div>
-                <span>Service History</span>
-              </div>
-
-              <div className="status-pill">
-                <div className="status-icon">
-                  <i className="fa-regular fa-calendar-check"></i>
-                </div>
-                <span>Upcoming Maintenance</span>
-              </div>
-              
-              <div className="status-pill">
-                <div className="status-icon">
-                  <i className="fa-solid fa-circle-exclamation"></i>
-                </div>
-                <span>Recall Alert</span>
-              </div>
-            
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="services-section">
         <div className="section-inner">
           <h2>Our Services</h2>

@@ -125,7 +125,12 @@
   background: none;
   border: none;
   cursor: pointer;
+}
+
+.auth-field .eye-button i{
   color: black;
+  transition: all 0.3s ease;
+  
 }
 
 .auth-extra-row {
@@ -176,4 +181,3 @@
     padding-inline: 1.75rem;
   }
 }
-
