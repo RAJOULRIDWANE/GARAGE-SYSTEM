@@ -24,6 +24,7 @@ class VehicleController extends Controller
             'model' => 'required',
             'license_plate' => 'required|unique:vehicles',
             'year' => 'required|integer',
+            'type' => 'required|in:car,moto,truck,bus',
         ]);
 
         $vehicle = Vehicle::create([
@@ -32,6 +33,7 @@ class VehicleController extends Controller
             'model' => $request->model,
             'year' => $request->year,
             'license_plate' => $request->license_plate,
+            'type' => $request->type,
         ]);
 
         return response()->json($vehicle, 201);

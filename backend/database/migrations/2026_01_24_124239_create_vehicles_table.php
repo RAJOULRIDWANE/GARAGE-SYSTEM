@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('model');
             $table->integer('year');
             $table->string('license_plate');
+            $table->enum('type', ['car', 'moto', 'truck', 'bus'])->default('car');
             $table->timestamps();
         });
     }

@@ -25,6 +25,7 @@ class RepairResource extends JsonResource
                 'make' => $this->vehicle->make,
                 'model' => $this->vehicle->model,
                 'plate' => $this->vehicle->license_plate,
+                'type' => $this->vehicle->type,
                 'client' => [
                     'id' => $this->vehicle->client->id ?? null,
                     'name' => $this->vehicle->client->name ?? 'Unknown',

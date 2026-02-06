@@ -1,39 +1,33 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { jsPDF } from "jspdf";
 import DashboardNavbar from '../components/DashboardNavbar';
 import "./ReceptionistDashboard.css"; 
 
 const ReceptionistDashboard = () => {
   const navigate = useNavigate();
 
-
-
-const [groupedClients, setGroupedClients] = useState([]);
-const [viewMode, setViewMode] = useState('clients'); // 'clients' or 'repairs'
-const [selectedClientRepairs, setSelectedClientRepairs] = useState([]);
-const [currentClientName, setCurrentClientName] = useState('');
-
-
+  // --- User State ---
   const [user, setUser] = useState({ 
     name: localStorage.getItem('USER_NAME') || 'Receptionist', 
     role: localStorage.getItem('USER_ROLE') || 'Receptionist' 
   });
 
-  const [repairs, setRepairs] = useState([]);
-  const [mechanics, setMechanics] = useState([]);
-  
-  const [dashboardSearch, setDashboardSearch] = useState(''); 
-  const [showFilterMenu, setShowFilterMenu] = useState(false); 
-  const [statusFilter, setStatusFilter] = useState('all'); 
-  const [priceSort, setPriceSort] = useState('none'); 
+  // --- Data State ---
+  const [groupedClients, setGroupedClients] = useState([]); // Main List
+  const [repairs, setRepairs] = useState([]); // For KPIs
+  const [mechanics, setMechanics] = useState([]); // For Add Modal
 
+  // --- Filter State ---
+  const [dashboardSearch, setDashboardSearch] = useState(''); 
+  
+  // --- Modal State ---
   const [showModal, setShowModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false); 
   const [message, setMessage] = useState(null); 
   const [messageType, setMessageType] = useState(''); 
 
+  // --- Add Job Form State ---
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -51,36 +45,45 @@ const [currentClientName, setCurrentClientName] = useState('');
     fetchDashboardData();
   }, []);
 
-const fetchDashboardData = async () => {
+  const fetchDashboardData = async () => {
     try {
         const token = localStorage.getItem('ACCESS_TOKEN');
         
-        // Fetch the Grouped Clients List
-        const res = await axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', {
+        // 1. Fetch Grouped Clients (The Main Table)
+        const clientRes = await axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', {
             headers: { Authorization: `Bearer ${token}` }
         });
-        setGroupedClients(res.data);
+        setGroupedClients(clientRes.data);
 
-        // Fetch Mechanics (for the add modal)
-        const mechRes = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
+        // 2. Fetch General Dashboard Data (Mechanics for Modal + Repairs for KPIs)
+        const dashRes = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
              headers: { Authorization: `Bearer ${token}` }
         });
-        setMechanics(mechRes.data.mechanics || []);
 
-    } catch (err) { console.error(err); }
-};
+        if (dashRes.data.user) {
+            setUser(dashRes.data.user); // Update the visual state
+            localStorage.setItem('USER_NAME', dashRes.data.user.name); // Persist it
+            localStorage.setItem('USER_ROLE', dashRes.data.user.role);
+        }
 
-const handleClientClick = async (clientId) => {
-    try {
-        const token = localStorage.getItem('ACCESS_TOKEN');
-        const res = await axios.get(`http://127.0.0.1:8000/api/receptionist/client/${clientId}/repairs`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setSelectedClientRepairs(res.data.repairs);
-        setCurrentClientName(res.data.client.name);
-        setViewMode('repairs'); // Switch view
-    } catch (err) { console.error(err); }
-};
+        setMechanics(dashRes.data.mechanics || []);
+        setRepairs(dashRes.data.repairs || []); // <--- Needed for KPIs
+
+    } catch (err) { 
+        console.error(err);
+        if(err.response && err.response.status === 401) handleLogout();
+    }
+  };
+
+  // --- NAVIGATION FIX ---
+  // We accept the full 'client' object now, not just the ID
+  const handleClientClick = (client) => {
+    // Safety check + Format name (Ahmed Ali -> Ahmed-Ali)
+    const safeName = client.name ? client.name.replace(/\s+/g, '-') : 'Client';
+      
+    // Navigate with BOTH ID (for logic) and Name (for display)
+    navigate(`/receptionist/client/${client.id}/${safeName}`); 
+  };
 
   const handleLogout = async () => {
       try {
@@ -88,9 +91,7 @@ const handleClientClick = async (clientId) => {
           await axios.post('http://127.0.0.1:8000/api/logout', {}, {
               headers: { Authorization: `Bearer ${token}` }
           });
-      } catch (error) {
-          console.error("Logout failed", error);
-      }
+      } catch (error) { console.error("Logout failed", error); }
       localStorage.clear();
       navigate('/login');
   };
@@ -98,18 +99,13 @@ const handleClientClick = async (clientId) => {
   const showMessage = (text, type) => {
     setMessage(text);
     setMessageType(type);
-    setTimeout(() => {
-      setMessage(null);
-      setMessageType('');
-    }, 4000);
+    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
   };
 
-const getKPIData = () => {
+  // --- KPI Logic ---
+  const getKPIData = () => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const today = `${year}-${month}-${day}`; 
+    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
 
     const todaysAppointments = repairs.filter(r => 
         r.date_end && r.date_end.startsWith(today)
@@ -117,13 +113,9 @@ const getKPIData = () => {
 
     const confirmedToday = repairs.filter(r => {
         if (!r.date_end || !r.status) return false;
-
         const isToday = r.date_end.startsWith(today);
-        
         const status = r.status.toLowerCase().trim();
-        const isFinished =  status === 'completed';
-
-        return isToday && isFinished;
+        return isToday && status === 'completed';
     }).length;
 
     return { todaysAppointments, confirmedToday };
@@ -131,42 +123,19 @@ const getKPIData = () => {
 
   const { todaysAppointments, confirmedToday } = getKPIData();
 
-
-const getFilteredRepairs = () => {
-  let filtered = [...repairs];
-
-  if (dashboardSearch) {
+  // --- Filter Logic ---
+  const getFilteredClients = () => {
+      if (!dashboardSearch) return groupedClients;
       const lowerSearch = dashboardSearch.toLowerCase();
-      filtered = filtered.filter(item => 
-          (item.vehicle?.client?.name || '').toLowerCase().includes(lowerSearch) ||
-          (item.mechanic?.name || '').toLowerCase().includes(lowerSearch)
+      return groupedClients.filter(client => 
+          client.name.toLowerCase().includes(lowerSearch) || 
+          client.email.toLowerCase().includes(lowerSearch)
       );
-  }
+  };
 
-  if (statusFilter !== 'all') {
-      filtered = filtered.filter(item => {
-          const dbStatus = (item.status || "").toLowerCase().trim();
-          const filterValue = statusFilter.toLowerCase();
+  const filteredClients = getFilteredClients();
 
-          if (filterValue === 'progress') {
-              return dbStatus.includes('progress');
-          }
-
-          return dbStatus === filterValue;
-      });
-  }
-
-  if (priceSort === 'low-high') {
-      filtered.sort((a, b) => parseFloat(a.cost) - parseFloat(b.cost));
-  } else if (priceSort === 'high-low') {
-      filtered.sort((a, b) => parseFloat(b.cost) - parseFloat(a.cost));
-  }
-
-  return filtered;
-};
-
-  const filteredRepairs = getFilteredRepairs();
-
+  // --- Add Appointment Logic ---
   const handleClientSearch = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -216,92 +185,6 @@ const getFilteredRepairs = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-      if (!window.confirm("Are you sure you want to delete this appointment?")) return;
-      try {
-          const token = localStorage.getItem('ACCESS_TOKEN');
-          await axios.delete(`http://127.0.0.1:8000/api/receptionist/jobs/${id}`, {
-              headers: { Authorization: `Bearer ${token}` }
-          });
-          showMessage("Appointment deleted.", "success");
-          fetchDashboardData(); 
-      } catch (err) {
-          console.error(err);
-          showMessage("Error deleting appointment.", "error");
-      }
-  };
-
-  
-
-  const handleDownloadInvoice = (invoice, clientName, vehicleInfo, jobCost) => {
-    
-    const finalAmount = invoice?.amount || jobCost || "0.00";
-
-    if (!invoice) {
-        invoice = { 
-            invoice_number: "INV-DRAFT", 
-            created_at: new Date(), 
-            status: "pending", 
-            amount: finalAmount 
-        };
-    }
-
-    const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.setTextColor(40);
-    doc.text("GARAGE SERVICE INVOICE", 105, 20, null, null, "center");
-    doc.setLineWidth(0.5);
-    doc.line(20, 25, 190, 25);
-
-    // Details
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Invoice No:", 20, 40);
-    doc.text("Date:", 20, 50);
-    doc.text("Status:", 20, 60);
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(invoice.invoice_number, 50, 40);
-    doc.text(new Date(invoice.created_at).toLocaleDateString(), 50, 50);
-    
-    const statusColor = (invoice.status === 'paid') ? [0, 128, 0] : [200, 0, 0];
-    doc.setTextColor(...statusColor);
-    doc.text((invoice.status || "PENDING").toUpperCase(), 50, 60);
-
-    // Bill To
-    doc.setTextColor(100); 
-    doc.setFontSize(10);
-    doc.text("BILL TO:", 120, 40);
-    doc.setTextColor(0); 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(clientName || "Guest Client", 120, 48);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(vehicleInfo || "Unknown Vehicle", 120, 55);
-
-    // Table
-    doc.setFillColor(240, 240, 240);
-    doc.rect(20, 75, 170, 10, "F");
-    doc.setFont("helvetica", "bold");
-    doc.text("DESCRIPTION", 25, 81);
-    doc.text("AMOUNT", 160, 81);
-
-    doc.setFont("helvetica", "normal");
-    doc.text("Repair Service", 25, 95);
-    
-    //  Use finalAmount here
-    doc.text(`${finalAmount} MAD`, 160, 95);
-    doc.line(20, 110, 190, 110);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("TOTAL DUE:", 110, 125);
-    doc.text(`${finalAmount} MAD`, 160, 125);
-    doc.save(`Invoice_${invoice.invoice_number}.pdf`);
-  };
-
-
   return (
       <div className="receptionist-container">
         <DashboardNavbar 
@@ -313,7 +196,7 @@ const getFilteredRepairs = () => {
       <div className="kpi-container">
         <div className="kpi-card">
             <div className="kpi-icon">
-              <i class="fa-regular fa-calendar"></i>
+              <i className="fa-regular fa-calendar"></i>
             </div>
             <div className="kpi-info">
                 <h3>Today's Appointment</h3>
@@ -322,7 +205,7 @@ const getFilteredRepairs = () => {
         </div>
         <div className="kpi-card">
             <div className="kpi-icon success-icon">
-              <i class="fa-regular fa-circle-check"></i>
+              <i className="fa-regular fa-circle-check"></i>
             </div>
             <div className="kpi-info">
                 <h3>Confirmed Appointment</h3>
@@ -332,50 +215,18 @@ const getFilteredRepairs = () => {
       </div>
 
       <div className="header-actions">
-        <h1> <i class="fa-solid fa-list-check"></i> Repairs Dashboard</h1>
-        <button className="add-btn" onClick={() => setShowModal(true)}>+ Add New Appointment</button>
+           <h1>Clients Overview</h1>
+           <button className="add-btn" onClick={() => setShowModal(true)}>+ Add New Appointment</button>
       </div>
 
       <div className="search-filter-bar">
         <input 
             type="text" 
-            placeholder="Search Item (Client or Mechanic)..." 
+            placeholder="Search Client by Name or Email..." 
             className="dashboard-search-input"
             value={dashboardSearch}
             onChange={(e) => setDashboardSearch(e.target.value)}
         />
-        
-        <div className="filter-wrapper">
-            <button className="filter-btn" onClick={() => setShowFilterMenu(!showFilterMenu)}>
-                <i class="fa-solid fa-filter"></i>  Filter
-            </button>
-
-            {showFilterMenu && (
-                <div className="filter-popup">
-                    <div className="filter-group">
-                        <label>Price</label>
-                        <select value={priceSort} onChange={(e) => setPriceSort(e.target.value)}>
-                            <option value="none">Default</option>
-                            <option value="low-high">Low to High</option>
-                            <option value="high-low">High to Low</option>
-                        </select>
-                    </div>
-                    <div className="filter-group">
-                        <label>Status</label>
-                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                            <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="canceled">Canceled</option>
-                        </select>
-                    </div>
-                    <button className="apply-filter-btn" onClick={() => setShowFilterMenu(false)}>
-                        Apply Filter
-                    </button>
-                </div>
-            )}
-        </div>
       </div>
 
       {!showModal && message && (
@@ -384,73 +235,38 @@ const getFilteredRepairs = () => {
          </div>
       )}
 
-
-
-
       <div className="table-card">
-            {viewMode === 'clients' ? (
-                // --- VIEW 1: CLIENTS TABLE ---
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Client Name</th>
-                            <th>Total Vehicles</th>
-                            <th>Total Repairs History</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {groupedClients.map(client => (
-                            <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client.id)}>
-                                <td>
-                                    <strong>{client.name}</strong>
-                                    <div className="sub-text">{client.email}</div>
-                                </td>
-                                <td>{client.vehicles?.length || 0} Vehicles</td>
-                                <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
-                                <td>
-                                    <button className="action-btn view-btn">
-                                        <i className="fa-solid fa-eye"></i> View History
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                // --- VIEW 2: REPAIRS TABLE (The Drill-Down) ---
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Service</th>
-                            <th>Mechanic</th>
-                            <th>Cost</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {selectedClientRepairs.map(job => (
-                            <tr key={job.id}>
-                                <td>{job.vehicle?.make} {job.vehicle?.model} ({job.vehicle?.plate})</td>
-                                <td>{job.description}</td>
-                                <td>{job.mechanic ? job.mechanic.name : 'Unassigned'}</td>
-                                <td>{job.cost} MAD</td>
-                                <td><span className={`status-badge ${job.status}`}>{job.status}</span></td>
-                                <td>
-                                    {/* Existing Invoice/Delete Buttons */}
-                                    <button className="action-btn invoice-btn" onClick={() => handleDownloadInvoice(job.invoice_number, currentClientName, "", job.cost)}>
-                                        <i className="fa-solid fa-file-arrow-down"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </div>
-
+        <table>
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Total Vehicles</th>
+                    <th>Total Repairs History</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {filteredClients.length > 0 ? filteredClients.map(client => (
+                    // PASS THE WHOLE CLIENT OBJECT HERE
+                    <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
+                        <td>
+                            <strong>{client.name}</strong>
+                            <div className="sub-text">{client.email}</div>
+                        </td>
+                        <td>{client.vehicles?.length || 0} Vehicles</td>
+                        <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
+                        <td>
+                            <button className="action-btn view-btn">
+                                <i className="fa-solid fa-eye"></i> View History
+                            </button>
+                        </td>
+                    </tr>
+                )) : (
+                    <tr><td colSpan="4" style={{textAlign: "center", padding: "20px"}}>No clients found.</td></tr>
+                )}
+            </tbody>
+        </table>
+      </div>
 
       {showModal && (
         <div className="modal-overlay">

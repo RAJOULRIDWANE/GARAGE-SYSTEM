@@ -13,6 +13,7 @@ import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
 import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
+import ReceptionistClientDetails from './Receptionist-Pages/ReceptionistClientDetails';
 import PartsManagerDashboard from './PartsManager-Pages/PartsManagerDashboard.jsx';
 import SupervisorDashboard from './Supervisor-Pages/SupervisorDashboard.jsx';
 import UserProfile from './pages/UserProfile.jsx';
@@ -33,9 +34,8 @@ const ProtectedRoute = ({ allowedRoles }) => {
 };
 
 function App() {
-  const location = useLocation(); // 2. Get the current URL address
+  const location = useLocation(); 
 
-  // 3. Define the list of "Public Pages" (Where Navbar/Footer should show)
   const publicRoutes = [
     '/', 
     '/login', 
@@ -72,6 +72,9 @@ function App() {
         } />
 
 
+
+        {/* CLIENT PATHS */}
+
         <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
           <Route path="/client/dashboard" element={<ClientDashboard />} />
         </Route>
@@ -79,6 +82,10 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
           <Route path="/client/profile" element={<UserProfile />} />
         </Route>
+
+
+        {/* MECHANIC PATHS */}
+
 
         <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/dashboard" element={<MechanicDashboard />} />
@@ -88,6 +95,10 @@ function App() {
           <Route path="/mechanic/profile" element={<UserProfile />} />
         </Route>
 
+
+        {/* SUPERVISOR PATHS */}
+
+
         <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
           <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
         </Route>
@@ -95,6 +106,10 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
           <Route path="/supervisor/profile" element={<UserProfile />} />
         </Route>
+
+
+        {/* RECEPTIONIST PATHS */}
+
 
         <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/receptionist/dashboard" element={<ReceptionistDashboard />} />
@@ -104,6 +119,14 @@ function App() {
           <Route path="/receptionist/profile" element={<UserProfile />} />
         </Route>
         
+        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+          <Route path="/receptionist/client/:id/:name" element={<ReceptionistClientDetails />} />
+        </Route>
+
+
+        {/* PARTS-MANAGER PATHS */}
+
+
         <Route element={<ProtectedRoute allowedRoles={['parts_manager', 'Parts_manager']} />}>
           <Route path="/partsmanager/dashboard" element={<PartsManagerDashboard />} />
         </Route>
@@ -114,7 +137,6 @@ function App() {
 
       </Routes>
 
-      {/* 6. Same Switch for Footer */}
       {showLayout && <Footer />}
       
     </div>

@@ -14,7 +14,8 @@ class Vehicle extends Model
         'make',
         'model',
         'license_plate',
-        'year'
+        'year',
+        'type'
     ];
 
     // A vehicle belongs to a client (User)
