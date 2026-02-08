@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import Home from './pages/Home.jsx'
@@ -91,6 +91,11 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/dashboard" element={<MechanicDashboard />} />
+        </Route>
+
+        {/* ← ADD THIS NEW ROUTE */}
+        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
+          <Route path="/mechanic/repair/:jobId" element={<RepairDetails />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
