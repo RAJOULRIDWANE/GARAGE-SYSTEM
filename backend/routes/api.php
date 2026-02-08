@@ -13,9 +13,9 @@ use App\Http\Controllers\Api\ReceptionistController;
 
 
     Route::post('/register', [AuthController::class, 'register']);
-   
+
     Route::post('/login', [AuthController::class, 'login']);
-   
+
     Route::post('/contact', [ContactDetailsController::class, 'store']);
 
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
@@ -29,7 +29,7 @@ use App\Http\Controllers\Api\ReceptionistController;
 
 
     Route::middleware('auth:sanctum')->group(function () {
-    
+
     // The Route for the Supervisor Dashboard
     Route::post('/staff', [AuthController::class, 'createStaff']);
 
@@ -37,8 +37,10 @@ use App\Http\Controllers\Api\ReceptionistController;
 
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::post('/vehicles', [VehicleController::class, 'store']);
-    
+
+    // MECHANIC ROUTES
     Route::get('/mechanic/jobs', [MechanicController::class, 'getMyRepairs']);
+    Route::get('/mechanic/jobs/{id}', [MechanicController::class, 'getJobById']); // ← ADD THIS LINE
     Route::patch('/mechanic/jobs/{id}', [MechanicController::class, 'updateStatus']);
 
 
@@ -49,14 +51,14 @@ use App\Http\Controllers\Api\ReceptionistController;
 
 
     Route::middleware(['auth:sanctum'])->prefix('receptionist')->group(function () {
-        
+
         // Dashboard Data
         Route::get('/dashboard', [ReceptionistController::class, 'dashboard']);
-        
+
         // Client & Vehicle Handling
         Route::get('/clients/search', [ReceptionistController::class, 'searchClients']);
         Route::get('/clients/{id}/vehicles', [ReceptionistController::class, 'getClientVehicles']);
-        
+
         // Job Operations
         Route::post('/jobs', [ReceptionistController::class, 'storeJob']);
         Route::delete('/jobs/{id}', [ReceptionistController::class, 'deleteJob']);

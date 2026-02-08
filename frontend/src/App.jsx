@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import Home from './pages/Home.jsx'
@@ -12,6 +12,7 @@ import 'remixicon/fonts/remixicon.css';
 import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
+import RepairDetails from './Mechanic-Pages/RepairDetails.jsx'; // ← ADD THIS LINE
 import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
 import PartsManagerDashboard from './PartsManager-Pages/PartsManagerDashboard.jsx';
 import SupervisorDashboard from './Supervisor-Pages/SupervisorDashboard.jsx';
@@ -33,9 +34,8 @@ const ProtectedRoute = ({ allowedRoles }) => {
 };
 
 function App() {
-  const location = useLocation(); // 2. Get the current URL address
+  const location = useLocation();
 
-  // 3. Define the list of "Public Pages" (Where Navbar/Footer should show)
   const publicRoutes = [
     '/', 
     '/login', 
@@ -84,6 +84,11 @@ function App() {
           <Route path="/mechanic/dashboard" element={<MechanicDashboard />} />
         </Route>
 
+        {/* ← ADD THIS NEW ROUTE */}
+        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
+          <Route path="/mechanic/repair/:jobId" element={<RepairDetails />} />
+        </Route>
+
         <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/profile" element={<UserProfile />} />
         </Route>
@@ -114,7 +119,6 @@ function App() {
 
       </Routes>
 
-      {/* 6. Same Switch for Footer */}
       {showLayout && <Footer />}
       
     </div>

@@ -20,6 +20,29 @@ class MechanicController extends Controller
         return response()->json($repairs);
     }
 
+    /**
+     * Get a specific repair/job by ID
+     * FIXED VERSION - Only loads the relationship that exists
+     */
+    public function getJobById(Request $request, $id)
+    {
+        $user = $request->user();
+
+        // Only load 'vehicle.client' since that's what getMyRepairs uses
+        $repair = Repair::where('id', $id)
+                       ->where('mechanic_id', $user->id)
+                       ->with('vehicle.client')  // ← CHANGED: Removed 'vehicle.user'
+                       ->first();
+
+        if (!$repair) {
+            return response()->json([
+                'message' => 'Job not found'
+            ], 404);
+        }
+
+        return response()->json($repair);
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
