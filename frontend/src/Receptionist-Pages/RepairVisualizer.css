@@ -1,0 +1,160 @@
+/* Layout of the Page */
+.visualizer-page {
+  background-color: #f1f5f9;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.visualizer-content {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 80px); /* Subtract Navbar height */
+  overflow: hidden;
+}
+
+/* --- LEFT SIDEBAR (Repair List) --- */
+.repair-sidebar {
+  width: 320px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.repair-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.repair-item {
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.repair-item:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.repair-item.active {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.repair-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.repair-desc {
+  margin: 5px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Badges in sidebar */
+.badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; font-weight: bold; }
+.badge.pending { background: #fef3c7; color: #b45309; }
+.badge.in-progress { background: #dbeafe; color: #1e40af; }
+.badge.completed { background: #dcfce7; color: #166534; }
+
+/* --- RIGHT STAGE (Visualization) --- */
+.visualizer-stage {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.stage-header {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* View Switcher Buttons */
+.view-controls button {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  margin-left: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.view-controls button.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* --- THE IMAGE CONTAINER --- */
+.car-container {
+  position: relative; /* Crucial for absolute overlays */
+  width: 100%;
+  max-width: 800px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.vehicle-image {
+  width: 100%;
+  display: block;
+  user-select: none;
+}
+
+/* --- THE ANIMATED ZONE --- */
+.visual-overlay-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.zone-label {
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #64748b; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.dot.pending { background: #f59e0b; }
+.dot.progress { background: #3b82f6; }
+.dot.completed { background: #10b981; }

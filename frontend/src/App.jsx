@@ -12,11 +12,13 @@ import 'remixicon/fonts/remixicon.css';
 import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
+import RepairDetails from './Mechanic-Pages/Repairdetails.jsx';
 import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
 import ReceptionistClientDetails from './Receptionist-Pages/ReceptionistClientDetails';
 import PartsManagerDashboard from './PartsManager-Pages/PartsManagerDashboard.jsx';
 import SupervisorDashboard from './Supervisor-Pages/SupervisorDashboard.jsx';
 import UserProfile from './pages/UserProfile.jsx';
+import RepairVisualizer from './Receptionist-Pages/RepairVisualizer';
 import './App.css'
 
 const ProtectedRoute = ({ allowedRoles }) => {
@@ -95,6 +97,9 @@ function App() {
           <Route path="/mechanic/profile" element={<UserProfile />} />
         </Route>
 
+        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
+          <Route path="/mechanic/repair/:jobId" element={<RepairDetails />} />
+        </Route>
 
         {/* SUPERVISOR PATHS */}
 
@@ -121,6 +126,9 @@ function App() {
         
         <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/receptionist/client/:id/:name" element={<ReceptionistClientDetails />} />
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+          <Route path="/track-repair/:id" element={<RepairVisualizer />} />
         </Route>
 
 

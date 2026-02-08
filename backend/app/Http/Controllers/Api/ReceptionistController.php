@@ -60,34 +60,53 @@ class ReceptionistController extends Controller
     {
         // 1. Validate
         $validated = $request->validate([
-            'vehicle_id' => 'required',
+            'vehicle_id'  => 'required',
             'mechanic_id' => 'required',
-            'description' => 'required',
-            'cost' => 'required',
-            'date_end' => 'required|date'
+            'service_id'  => 'required|exists:services,id', // <--- Validate Service exists
+            'description' => 'nullable', 
+            'cost'        => 'required', // This comes from the frontend auto-calculation
+            'date_end'    => 'required|date'
         ]);
 
-        // 2. Create
+        // 2. Create the Repair
         $repair = Repair::create([
-            'vehicle_id' => $validated['vehicle_id'],
-            'mechanic_id' => $validated['mechanic_id'],
-            'description' => $validated['description'],
-            'cost' => $validated['cost'],
-            'status' => 'Pending',
-            'date_entry' => now(),
-            'date_end' => $validated['date_end'],
+            'vehicle_id'     => $validated['vehicle_id'],
+            'mechanic_id'    => $validated['mechanic_id'],
+            'service_id'     => $validated['service_id'], // <--- SAVE THE SERVICE ID
+            'description'    => $validated['description'] ?? 'Standard Service',
+            'cost'           => $validated['cost'],
+            'status'         => 'Pending',
+            'date_entry'     => now(),
+            'date_end'       => $validated['date_end'],
             'invoice_number' => 'INV-' . strtoupper(uniqid()), 
         ]);
         
-        // 3. Load Relationships (IMPORTANT)
-        // The RepairResource needs 'vehicle' and 'mechanic' to work.
-        // Since we just created this repair, they aren't loaded yet.
-        $repair->load(['vehicle.client', 'mechanic']);
+        // 3. Load Relationships (So the response includes the names, not just IDs)
+        $repair->load(['vehicle.client', 'mechanic', 'service']); 
 
-        // 4. Return Resource
+        // 4. Return the Response
         return response()->json([
-            'message' => 'Created', 
-            'repair' => new RepairResource($repair) // <--- Use Resource here too
+            'message' => 'Created Successfully', 
+            'repair'  => new RepairResource($repair) 
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        // 1. Validate only the allowed statuses (This is the Gatekeeper!)
+        $request->validate([
+            'status' => 'required|in:Pending,In Progress,Confirmed,Canceled'
+        ]);
+
+        $repair = Repair::findOrFail($id);
+        
+        // 2. Update
+        $repair->status = $request->status;
+        $repair->save();
+
+        return response()->json([
+            'message' => 'Status Updated',
+            'repair'  => new RepairResource($repair)
         ]);
     }
 
@@ -113,21 +132,30 @@ class ReceptionistController extends Controller
     }
 
     // --- NEW: Drill-Down (Specific Client Repairs) ---
-    public function getClientRepairs($clientId)
+public function getClientRepairs($clientId)
+{
+    $client = User::findOrFail($clientId);
+
+    // 1. Fetch repairs
+    $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
+            $q->where('user_id', $clientId);
+        })
+        // 2. LOAD DATA: This pulls the full objects from other tables
+        ->with(['vehicle', 'mechanic', 'service']) 
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json([
+        'client' => $client,
+        // 3. BYPASS RESOURCE: Send $repairs directly. 
+        // Do NOT use RepairResource::collection($repairs) here.
+        'repairs' => $repairs 
+    ]);
+}
+
+    public function show($id)
     {
-        $client = User::findOrFail($clientId);
-
-        // Fetch repairs ONLY for this client
-        $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
-                $q->where('user_id', $clientId);
-            })
-            ->with(['vehicle', 'mechanic']) // Eager load for speed
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'client' => $client,
-            'repairs' => RepairResource::collection($repairs) // Reuse your Resource!
-        ]);
+        $repair = Repair::with(['vehicle.client', 'mechanic'])->findOrFail($id);
+        return new RepairResource($repair);
     }
 }

@@ -1,3 +1,4 @@
+//import { useState, useEffect, useCallback } from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -193,7 +194,7 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                                 <h2>{kpiData.ActiveJobs}</h2>
                             </div>
                             <div className="stat-icon blue">
-                              <i class="fa-solid fa-wrench"></i>
+                              <i className="fa-solid fa-wrench"></i>
                             </div>
                         </div>
 
@@ -203,17 +204,17 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                                 <h2>{kpiData.completed}</h2>
                             </div>
                             <div className="stat-icon green">
-                              <i class="fa-solid fa-check"></i>
+                              <i className="fa-solid fa-check"></i>
                             </div>
                         </div>
 
                         <div className="stat-card">
                             <div className="stat-info">
-                                <span>Awaitnig tasks </span>
+                                <span>Awaiting tasks </span>
                                 <h2>{kpiData.pending}</h2>
                             </div>
                             <div className="stat-icon orange">
-                              <i class="fa-solid fa-clock-rotate-left"></i>
+                              <i className="fa-solid fa-clock-rotate-left"></i>
                             </div>
                         </div>
                     </div>
@@ -240,7 +241,19 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                         ) : (
                             // Renamed 'task' to 'job' to match Receptionist style
                             repairs.map(job => (
-                                <div key={job.id} className="task-card">
+                                <div 
+                                    key={job.id} 
+                                    className="task-card"
+                                    onClick={() => {
+                                        // Only navigate if job is not completed
+                                        if (job.status !== 'completed') {
+                                            navigate(`/mechanic/repair/${job.id}`);
+                                        }
+                                    }}
+                                    style={{ 
+                                        cursor: job.status !== 'completed' ? 'pointer' : 'default' 
+                                    }}
+                                >
                                     <div className="task-details">
                                         <h3>{job.description}</h3>
                                         <span className="car-model">
@@ -254,7 +267,7 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                                         </span>
                                     </div>
 
-                                  <div className="task-action">
+                                  <div className="task-action" onClick={(e) => e.stopPropagation()}>
                                       <label style={{fontSize: '12px', color: '#888', display: 'block', marginBottom: '4px'}}>
                                           Current Status:
                                       </label>

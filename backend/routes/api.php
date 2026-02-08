@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\MechanicController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ReceptionistController;
-
+use App\Http\Controllers\Api\ServiceController; // <--- 1. Add this at the top
 
 
     Route::post('/register', [AuthController::class, 'register']);
@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\ReceptionistController;
 
 
 
+    Route::get('/services', [ServiceController::class, 'index']);
 
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -84,6 +85,12 @@ use App\Http\Controllers\Api\ReceptionistController;
 
     // 5. Delete Job
     Route::delete('/receptionist/jobs/{id}', [ReceptionistController::class, 'deleteJob']);
+
+
+    Route::get('/repair/{id}', [ReceptionistController::class, 'show']);
+
+
+
 
     Route::get('/user', function (Request $request) {
         return $request->user();

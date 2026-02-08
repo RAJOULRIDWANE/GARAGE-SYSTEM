@@ -15,28 +15,22 @@ class RepairResource extends JsonResource
             'cost' => $this->cost,
             'status' => $this->status,
             'date_end' => $this->date_end,
-            'created_at' => $this->created_at, // needed for sorting/display
             'invoice_number' => $this->invoice_number,
             
-            // OPTIMIZATION: Manually constructing the nested data 
-            // This prevents sending the ENTIRE vehicle/client row (like updated_at, user_id, etc)
-            'vehicle' => [
-                'id' => $this->vehicle->id,
+            // Client & Vehicle Info
+            'vehicle' => $this->vehicle ? [
                 'make' => $this->vehicle->make,
                 'model' => $this->vehicle->model,
-                'plate' => $this->vehicle->license_plate,
-                'type' => $this->vehicle->type,
-                'client' => [
-                    'id' => $this->vehicle->client->id ?? null,
-                    'name' => $this->vehicle->client->name ?? 'Unknown',
-                    // No email, no password, no phone sent here!
-                ]
-            ],
-
-            'mechanic' => $this->mechanic ? [
-                'id' => $this->mechanic->id,
-                'name' => $this->mechanic->name,
+                'plate' => $this->vehicle->plate_number,
+                'owner' => $this->vehicle->client ? $this->vehicle->client->name : 'Unknown'
             ] : null,
+
+            // Mechanic Info
+            'mechanic' => $this->mechanic ? $this->mechanic->name : 'Unassigned',
+
+            // --- NEW: Service Info ---
+            'service_name' => $this->service ? $this->service->name : 'Custom Repair',
+            'service_zone' => $this->service ? $this->service->zone : 'general',
         ];
     }
 }

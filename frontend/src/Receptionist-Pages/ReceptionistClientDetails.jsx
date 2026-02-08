@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { jsPDF } from "jspdf";
 import DashboardNavbar from '../components/DashboardNavbar';
-import "./ReceptionistDashboard.css"; 
+import "./ReceptionistClientDetails.css"; 
 
 const ReceptionistClientDetails = () => {
   const { id, name } = useParams(); 
@@ -33,10 +33,12 @@ const ReceptionistClientDetails = () => {
         const res = await axios.get(`http://127.0.0.1:8000/api/receptionist/client/${id}/repairs`, {
             headers: { Authorization: `Bearer ${token}` }
         });
+        
+
         setClient(res.data.client);
         setRepairs(res.data.repairs);
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching details:", err);
     }
   };
 
@@ -72,21 +74,18 @@ const ReceptionistClientDetails = () => {
   // --- Search Filter Logic ---
   const filteredRepairs = repairs.filter(job => {
       if (!searchTerm) return true;
-      const plate = job.vehicle?.plate || '';
+      // Check both plate and plate_number just in case
+      const plate = job.vehicle?.plate_number || job.vehicle?.plate || '';
       return plate.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   // --- Invoice Logic ---
   const handleDownloadInvoice = (invoice, clientName, vehicleInfo, jobCost) => {
     const finalAmount = invoice?.amount || jobCost || "0.00";
-    if (!invoice) {
-        invoice = { 
-            invoice_number: "INV-DRAFT", 
-            created_at: new Date(), 
-            status: "pending", 
-            amount: finalAmount 
-        };
-    }
+    let invNumber = invoice?.invoice_number || "INV-DRAFT";
+    let invDate = invoice?.created_at ? new Date(invoice.created_at) : new Date();
+    let invStatus = invoice?.status || "Pending";
+
     const doc = new jsPDF();
     doc.setFontSize(22);
     doc.setTextColor(40);
@@ -102,12 +101,12 @@ const ReceptionistClientDetails = () => {
 
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text(invoice.invoice_number, 50, 40);
-    doc.text(new Date(invoice.created_at).toLocaleDateString(), 50, 50);
+    doc.text(invNumber, 50, 40);
+    doc.text(invDate.toLocaleDateString(), 50, 50);
     
-    const statusColor = (invoice.status === 'paid') ? [0, 128, 0] : [200, 0, 0];
+    const statusColor = (invStatus === 'paid') ? [0, 128, 0] : [200, 0, 0];
     doc.setTextColor(...statusColor);
-    doc.text((invoice.status || "PENDING").toUpperCase(), 50, 60);
+    doc.text(invStatus.toUpperCase(), 50, 60);
 
     doc.setTextColor(100); 
     doc.setFontSize(10);
@@ -136,7 +135,25 @@ const ReceptionistClientDetails = () => {
     doc.text("TOTAL DUE:", 110, 125);
     doc.text(`${finalAmount} MAD`, 160, 125);
 
-    doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+    doc.save(`Invoice_${invNumber}.pdf`);
+  };
+
+  // --- HELPER: Slugify Status for CSS ---
+  const getBadgeClass = (status) => {
+      if (!status) return 'pending';
+      const s = status.toLowerCase().trim();
+      if (s === 'progress' || s === 'in progress') return 'in-progress'; 
+      if (s === 'completed') return 'completed';
+      if (s === 'cancelled') return 'cancelled';
+      return 'pending'; 
+  };
+
+  // --- HELPER: Format Display Text ---
+  const formatStatusLabel = (status) => {
+      if (!status) return 'Pending';
+      const s = status.toLowerCase().trim();
+      if (s === 'progress' || s === 'in-progress' || s === 'in progress') return 'In Progress';
+      return status; 
   };
 
   return (
@@ -144,9 +161,9 @@ const ReceptionistClientDetails = () => {
       <DashboardNavbar user={user} onLogout={handleLogout} />
 
       <div className="header-actions">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <Link to="/receptionist/dashboard" className="filter-btn" style={{textDecoration:'none'}}>
-                <i className="fa-solid fa-arrow-left"></i> Back to Dashboard
+        <div>
+            <Link to="/receptionist/dashboard" className="dashboard-back">
+                ← Back to Dashboard
             </Link>
             <h1>{clientNameDisplay}'s Repair History</h1>
         </div>
@@ -183,7 +200,7 @@ const ReceptionistClientDetails = () => {
         </div>
         <div className="kpi-card">
             <div className="kpi-icon success-icon">
-              <i className="fa-solid fa-money-bill-wave"></i>
+              <i class="fa-solid fa-wallet"></i>
             </div>
             <div className="kpi-info">
                 <h3>Total Spent</h3>
@@ -208,11 +225,12 @@ const ReceptionistClientDetails = () => {
             <thead>
                 <tr>
                     <th>Vehicle</th>
-                    <th>Type</th> {/* NEW COLUMN HEADER */}
+                    <th>Type</th>
                     <th>Service</th>
                     <th>Mechanic</th>
                     <th>Cost</th>
-                    <th>Date</th>
+                    <th>Start Date</th>
+                    <th>Predicted End</th> 
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -220,26 +238,83 @@ const ReceptionistClientDetails = () => {
             <tbody>
                 {filteredRepairs.length > 0 ? filteredRepairs.map(job => (
                     <tr key={job.id}>
+                        {/* 1. Vehicle Info (Checks plate OR plate_number) */}
                         <td>
-                            {job.vehicle?.make} {job.vehicle?.model} 
-                            <br/><small style={{color:'#666'}}>{job.vehicle?.plate}</small>
+                            <strong>{job.vehicle?.make || 'Unknown'} {job.vehicle?.model || ''}</strong>
+                            <div className="sub-text">
+                                {/* Try all common names */}
+                                {job.vehicle?.plate || 
+                                job.vehicle?.plate_number || 
+                                job.vehicle?.license_plate || 
+                                job.vehicle?.matricule || 
+                                job.vehicle?.registration_number || 
+                                'No Plate'}
+                            </div>
                         </td>
-                        {/* NEW COLUMN DATA: VEHICLE TYPE */}
+                        
+                        {/* 2. Vehicle Type */}
                         <td>
-                             <span style={{textTransform: 'capitalize', fontWeight: '500'}}>
-                                {job.vehicle?.type || 'TBD' }
+                             <span style={{textTransform: 'capitalize', fontWeight: '500', color:'#475569'}}>
+                                {job.vehicle?.type || 'Standard'}
                              </span>
                         </td>
-                        <td>{job.description}</td>
-                        <td>{job.mechanic ? job.mechanic.name : 'Unassigned'}</td>
-                        <td>{job.cost} MAD</td>
+                        
+                        {/* 3. Service Name & Desc */}
                         <td>
-                             {new Date(job.created_at).toLocaleString('en-GB', {
+                            <strong>{job.service?.name || 'Custom Service'}</strong>
+                            <div className="sub-text">
+                                {job.description || 'No description'}
+                            </div>
+                        </td>
+                        
+                        {/* 4. Mechanic Name */}
+                        <td>
+                             {job.mechanic ? (
+                                <span className="mechanic-name">
+                                   {job.mechanic.name}
+                                </span>
+                             ) : <span className="unassigned">Unassigned</span>}
+                        </td>
+                        
+                        {/* Cost */}
+                        <td style={{fontWeight:'bold'}}>{job.cost} MAD</td>
+                        
+                        {/* 5. Start Date (Checks date_start OR created_at) */}
+                        <td>
+                             {new Date(job.date_start || job.created_at).toLocaleString('en-GB', {
                                 day: '2-digit', month: '2-digit', year: 'numeric'
                              })}
                         </td>
-                        <td><span className={`status-badge ${job.status}`}>{job.status}</span></td>
+
+                        {/* Predicted End Date */}
                         <td>
+                             {job.date_end ? new Date(job.date_end).toLocaleString('en-GB', {
+                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+                             }) : <span className="sub-text">TBD</span>}
+                        </td>
+                        
+                        {/* Status */}
+                        <td>
+                            <span className={`status-badge ${getBadgeClass(job.status)}`}>
+                                {formatStatusLabel(job.status)}
+                            </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td>
+                            <button 
+                                className="action-btn" 
+                                style={{
+                                    marginRight:'8px', 
+                                    backgroundColor: '#dbeafe', 
+                                    color:'#1e40af',
+                                }}
+                                title="Open Live Monitor"
+                                onClick={() => navigate(`/track-repair/${job.id}`)}
+                            >
+                                <i className="fa-solid fa-eye"></i>
+                            </button>
+
                             <button className="action-btn invoice-btn" onClick={() => handleDownloadInvoice(
                                 job.invoice, 
                                 clientNameDisplay, 
@@ -251,7 +326,7 @@ const ReceptionistClientDetails = () => {
                         </td>
                     </tr>
                 )) : (
-                    <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No records found matching "{searchTerm}".</td></tr>
+                    <tr><td colSpan="9" style={{textAlign:'center', padding:'20px'}}>No records found matching "{searchTerm}".</td></tr>
                 )}
             </tbody>
         </table>

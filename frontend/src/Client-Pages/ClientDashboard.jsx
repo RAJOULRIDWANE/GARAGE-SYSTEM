@@ -1,76 +1,170 @@
-import { useState, useEffect } from 'react'; 
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
-import DashboardNavbar from '../components/DashboardNavbar'; 
-import "./ClientDashboard.css";
+import DashboardNavbar from '../components/DashboardNavbar';
+import './ClientDashboard.css';
 
 const ClientDashboard = () => {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState({ 
-    name: localStorage.getItem('USER_NAME'), 
-    role: localStorage.getItem('USER_ROLE'),
-  });
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({ name: 'Client' });
 
   useEffect(() => {
-    fetchClientData();
+    fetchDashboardData();
   }, []);
 
-  const fetchClientData = async () => {
+  const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
-      
-      const res = await axios.get('http://127.0.0.1:8000/api/user', {
+      const userData = JSON.parse(localStorage.getItem('USER_DATA') || '{}');
+      setUser(userData);
+
+      const res = await axios.get('http://127.0.0.1:8000/api/client/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      const userData = {
-        name: res.data.name || res.data.user?.name, 
-        role: res.data.role || res.data.user?.role
-      };
-
-      setUser(userData);
-      localStorage.setItem('USER_NAME', userData.name);
-      localStorage.setItem('USER_ROLE', userData.role);
-
-    } catch (err) {
-      if(err.response && err.response.status === 401) {
-          localStorage.clear();
-          navigate('/login'); 
-      }
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-        const token = localStorage.getItem('ACCESS_TOKEN');
-        await axios.post('http://127.0.0.1:8000/api/logout', {}, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      setData(res.data);
+      setLoading(false);
     } catch (error) {
-        console.error("Logout failed", error);
+      console.error("Error loading dashboard:", error);
+      setLoading(false);
     }
-    localStorage.clear();
-    navigate('/login');
   };
 
-  const openPasswordModal = () => {
-    console.log("Open Password Modal");
+  const handleDownloadInvoice = (repairId) => {
+    // Logic to download invoice
+    alert("Downloading Invoice for repair #" + repairId);
   };
+
+  const handleLeaveComment = (mechanicName) => {
+    // Logic to open chat or comment modal
+    alert(`Leaving a comment for ${mechanicName}`);
+  };
+
+  if (loading) return <div className="loading-screen">Loading your space...</div>;
 
   return (
-    <div className="client-dashboard-container"> 
-      
-      <DashboardNavbar 
-        user={user} 
-        onLogout={handleLogout} 
-        onChangePassword={openPasswordModal} 
-      />
-    
-      <div className="dashboard-content" style={{ padding: '30px' }}>
-         <h1>Client Dashboard </h1>
-      </div>
+    <div className="client-dashboard-bg">
+      <DashboardNavbar user={user} onLogout={() => navigate('/login')} />
 
+      <div className="client-container">
+        
+        {/* HEADER */}
+        <div className="dashboard-header">
+          <h1>My Client Space</h1>
+          <p>Manage Your Vehicles & Appointments</p>
+        </div>
+
+        {/* 1. TOP KPI CARDS */}
+        <div className="kpi-row">
+          {/* My Vehicles */}
+          <div className="kpi-card-client">
+            <div className="kpi-text">
+              <span className="kpi-label">My Vehicles</span>
+              <span className="kpi-value">{data?.kpi.vehicles_count}</span>
+            </div>
+            <div className="kpi-icon-bubble blue">
+              <i className="fa-solid fa-car"></i>
+            </div>
+          </div>
+
+          {/* Active Repairs */}
+          <div className="kpi-card-client">
+            <div className="kpi-text">
+              <span className="kpi-label">Active Repairs</span>
+              <span className="kpi-value">{data?.kpi.active_repairs}</span>
+            </div>
+            <div className="kpi-icon-bubble green">
+              <i className="fa-regular fa-calendar-check"></i>
+            </div>
+          </div>
+
+          {/* Invoices */}
+          <div className="kpi-card-client">
+            <div className="kpi-text">
+              <span className="kpi-label">Invoices Due</span>
+              <span className="kpi-value">{data?.kpi.invoices_due}</span>
+            </div>
+            <div className="kpi-icon-bubble orange">
+              <i className="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. MIDDLE SECTION: CURRENT ACTIVE REPAIRS */}
+        <h2 className="section-title">Current Progress</h2>
+        
+        {data?.current_jobs.length > 0 ? (
+          data.current_jobs.map((job) => (
+            <div className="active-job-container" key={job.id}>
+              
+              {/* Left Card: Vehicle Info */}
+              <div className="job-card">
+                <div className="job-icon blue-bg">
+                   <i className="fa-solid fa-car-side"></i>
+                </div>
+                <div className="job-details">
+                    <h3>{job.vehicle?.make} {job.vehicle?.model}</h3>
+                    <p className="plate-number">{job.vehicle?.plate_number || job.vehicle?.plate}</p>
+                    <p className="job-date">Entry: {new Date(job.created_at).toLocaleDateString()}</p>
+                </div>
+                {job.status === 'Completed' && (
+                    <button className="invoice-btn-outline" onClick={() => handleDownloadInvoice(job.id)}>
+                        <i className="fa-solid fa-file-pdf"></i> Download Invoice
+                    </button>
+                )}
+              </div>
+
+              {/* Right Card: Mechanic Info */}
+              <div className="job-card">
+                <div className="job-icon blue-bg">
+                   <i className="fa-solid fa-wrench"></i>
+                </div>
+                <div className="job-details">
+                    <h3>{job.mechanic?.name || 'Assigned Team'}</h3>
+                    <p className="role-text">Car Expert</p>
+                    <p className={`status-pill ${job.status.toLowerCase().replace(' ', '-')}`}>
+                        {job.status}
+                    </p>
+                </div>
+                <button className="comment-btn-outline" onClick={() => handleLeaveComment(job.mechanic?.name)}>
+                    <i className="fa-regular fa-comments"></i> Leave a Comment
+                </button>
+              </div>
+
+            </div>
+          ))
+        ) : (
+          <div className="empty-state">
+            <p>You have no active repairs at the moment.</p>
+          </div>
+        )}
+
+        {/* 3. BOTTOM SECTION: LATEST REPAIRS (History) */}
+        <h2 className="section-title" style={{marginTop:'30px'}}>Latest Activity</h2>
+        <div className="history-list">
+            {data?.history.map((job) => (
+                <div className="history-card" key={job.id}>
+                    <div className="history-icon">
+                        <i className="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div className="history-info">
+                        <h3>{job.service?.name || job.description || 'General Service'}</h3>
+                        <p>{job.vehicle?.make} {job.vehicle?.model}</p>
+                        <span className="ready-date">
+                            {job.date_end ? `Ready: ${job.date_end}` : `Status: ${job.status}`}
+                        </span>
+                    </div>
+                    <div className="history-status">
+                         <span className={`status-badge-small ${job.status.toLowerCase().replace(' ', '-')}`}>
+                             {job.status}
+                         </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+      </div>
     </div>
   );
 };
