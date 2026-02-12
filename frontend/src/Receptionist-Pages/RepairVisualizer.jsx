@@ -1,80 +1,111 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom'; // Added Link
 import axios from 'axios';
-import DashboardNavbar from '../components/DashboardNavbar'; // Adjust path if needed
+import DashboardNavbar from '../components/DashboardNavbar';
 import './RepairVisualizer.css';
 
-// --- MOCK IMAGES (Replace these with your actual local assets) ---
-// You mentioned 24 photos. Use your imports here.
+// --- 1. IMAGE CONFIGURATION ---
 const CAR_IMAGES = {
   sedan: {
-    side: "https://i.imgur.com/K75kU6g.png", // Placeholder: Side View Blueprint
-    top: "https://placehold.co/600x400/png?text=Sedan+Top+View",
-    front: "https://placehold.co/600x400/png?text=Sedan+Front+View",
-  },
-  suv: {
-    side: "https://placehold.co/600x400/png?text=SUV+Side+View",
-    // ...
+    front:  "/car-views/front.png",
+    back:   "/car-views/back.png",
+    left:   "/car-views/side.png", 
+    right:  "/car-views/side.png",
+    top:    "/car-views/top.png",
+    bottom: "/car-views/bottom.png",
   }
 };
 
-// --- ZONE MAPPING (The "Bridge") ---
-// Define where the boxes appear on the "Side View" image (in percentages)
+// --- 2. COLORS ---
+const STATUS_COLORS = {
+  'Pending':      'rgba(255, 165, 0, 0.6)', 
+  'In Progress':  'rgba(0, 123, 255, 0.6)',
+  'Completed':    'rgba(40, 167, 69, 0.6)',
+  'Cancelled':    'rgba(220, 53, 69, 0.6)',
+};
+
+// --- 3. ZONE MAPPING ---
 const ZONE_MAP = {
   sedan: {
-    side: {
-      ENGINE:   { top: '28%', left: '70%', width: '25%', height: '20%', borderRadius: '10%' },
-      WHEELS:   [
-        { top: '55%', left: '13%', width: '14%', height: '26%', borderRadius: '50%' }, // Rear
-        { top: '55%', left: '72%', width: '14%', height: '26%', borderRadius: '50%' }  // Front
+    front: {
+      LIGHTS: [
+        { top: '48%', left: '10%', width: '12%', height: '10%', borderRadius: '50%' }, 
+        { top: '48%', left: '78%', width: '12%', height: '10%', borderRadius: '50%' }
+      ]
+    },
+    back: {
+      LIGHTS: [
+        { top: '42%', left: '12%', width: '15%', height: '12%', borderRadius: '10%' },
+        { top: '42%', left: '73%', width: '15%', height: '12%', borderRadius: '10%' }
       ],
-      BODY:     { top: '25%', left: '25%', width: '45%', height: '30%', borderRadius: '5px' },
-      LIGHTS:   { top: '35%', left: '92%', width: '5%', height: '10%', borderRadius: '50%' },
-      EXHAUST:  { top: '70%', left: '1%',  width: '8%', height: '8%', borderRadius: '5px' },
+      EXHAUST: { top: '82%', left: '70%', width: '10%', height: '10%', borderRadius: '50%' }
+    },
+    right: {
+      WHEELS: [
+        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' }, 
+        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' }  
+      ]
+    },
+    left: {
+      WHEELS: [
+        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' }, 
+        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' } 
+      ]
+    },
+    top: {
+      ENGINE: { top: '12%', left: '25%', width: '50%', height: '25%', borderRadius: '15%' },
+      BODY:   { top: '38%', left: '20%', width: '60%', height: '40%', borderRadius: '5px' }
+    },
+    bottom: {
+      ENGINE: { top: '15%', left: '30%', width: '40%', height: '20%', borderRadius: '5px' }, 
+      BODY:   { top: '40%', left: '25%', width: '50%', height: '30%', borderRadius: '5px' },
+      WHEELS: [
+        { top: '22%', left: '8%', width: '12%', height: '15%', borderRadius: '10%' },
+        { top: '22%', left: '80%', width: '12%', height: '15%', borderRadius: '10%' },
+        { top: '72%', left: '8%', width: '12%', height: '15%', borderRadius: '10%' },
+        { top: '72%', left: '80%', width: '12%', height: '15%', borderRadius: '10%' }
+      ]
     }
   }
-};
-
-// --- COLOR MAPPING ---
-const STATUS_COLORS = {
-  Pending:    'rgba(255, 193, 7, 0.6)',   // Yellow
-  'In Progress': 'rgba(13, 110, 253, 0.6)', // Blue
-  Completed:  'rgba(25, 135, 84, 0.6)',   // Green
-  Cancelled:  'rgba(220, 53, 69, 0.6)',   // Red
 };
 
 const RepairVisualizer = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { repairId } = useParams();
   
-  // -- State --
-  const [user, setUser] = useState({ name: localStorage.getItem('USER_NAME') || 'Receptionist', role: 'Receptionist' });
+  const [user] = useState({ name: localStorage.getItem('USER_NAME') || 'Receptionist', role: 'Receptionist' });
   const [repairs, setRepairs] = useState([]);
   const [selectedRepair, setSelectedRepair] = useState(null);
-  const [currentView, setCurrentView] = useState('side'); // side, top, front, back...
+  const [currentView, setCurrentView] = useState('front'); 
 
-  // -- 1. Load Data --
   useEffect(() => {
     fetchRepairs();
-    // If we navigated here with a specific repair selected
-    if (location.state?.repairId) {
-      // Logic to auto-select would go here after fetch
-    }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repairId]);
 
   const fetchRepairs = async () => {
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
-      // Fetching "Pending" or "In Progress" jobs usually
       const res = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Assuming res.data.repairs exists
-      setRepairs(res.data.repairs || []);
+      console.log("FIRST REPAIR DATA:", JSON.stringify(res.data.repairs[0], null, 2));
+      console.log("FULL API DATA:", res.data);
       
-      // Select first one by default if available
-      if (res.data.repairs && res.data.repairs.length > 0) {
-        setSelectedRepair(res.data.repairs[0]);
+      const allRepairs = res.data.repairs || [];
+
+      if (repairId) {
+        const targetRepair = allRepairs.find(r => r.id.toString() === repairId.toString());
+        if (targetRepair) {
+          setRepairs([targetRepair]); 
+          setSelectedRepair(targetRepair); 
+        } else {
+          setRepairs([]);
+          setSelectedRepair(null);
+        }
+      } else {
+        setRepairs(allRepairs);
+        if (allRepairs.length > 0) setSelectedRepair(allRepairs[0]);
       }
     } catch (err) {
       console.error("Error loading repairs", err);
@@ -86,36 +117,35 @@ const RepairVisualizer = () => {
     navigate('/login');
   };
 
-  // -- 2. Helper: Get Category from Service --
-  // Since your DB might not have 'category' yet, we map it manually here
-  const getCategory = (serviceName) => {
-    if (!serviceName) return 'BODY';
-    const lower = serviceName.toLowerCase();
-    if (lower.includes('oil') || lower.includes('engine') || lower.includes('filter')) return 'ENGINE';
-    if (lower.includes('tire') || lower.includes('wheel') || lower.includes('brake')) return 'WHEELS';
-    if (lower.includes('paint') || lower.includes('dent') || lower.includes('scratch')) return 'BODY';
-    if (lower.includes('light') || lower.includes('lamp')) return 'LIGHTS';
-    if (lower.includes('muffler') || lower.includes('exhaust')) return 'EXHAUST';
-    return 'BODY'; // Default
+  // --- 4. CATEGORY LOGIC (DB Driven) ---
+  const getCategory = (repair) => {
+    if (!repair || !repair.service || !repair.service.zone) return 'BODY'; 
+    return repair.service.zone.toUpperCase();
   };
 
-  // -- 3. Render The Zone Overlay --
+  const getImageStyle = () => {
+    if (currentView === 'left') return { transform: 'scaleX(-1)' };
+    return {};
+  };
+
   const renderZone = () => {
     if (!selectedRepair) return null;
+    const vehicleType = 'sedan'; 
+    
+    const category = getCategory(selectedRepair);
+    if (!ZONE_MAP[vehicleType] || !ZONE_MAP[vehicleType][currentView]) return null;
+    const coords = ZONE_MAP[vehicleType][currentView][category];
+    if (!coords) return null; 
 
-    const vehicleType = 'sedan'; // Hardcoded for now, or use selectedRepair.vehicle.type
-    const serviceName = selectedRepair.service?.name || selectedRepair.description; // Fallback
-    const category = getCategory(serviceName);
-    const status = selectedRepair.status;
-    
-    // Get Coordinates
-    const coords = ZONE_MAP[vehicleType]?.[currentView]?.[category];
-    
-    if (!coords) return null;
+    const statusKey = selectedRepair.status?.trim() || 'Pending';
+    let finalColor = STATUS_COLORS['Pending'];
+    if (statusKey.toLowerCase().includes('progress')) finalColor = STATUS_COLORS['In Progress'];
+    else if (statusKey.toLowerCase() === 'completed') finalColor = STATUS_COLORS['Completed'];
+    else if (statusKey.toLowerCase() === 'cancelled') finalColor = STATUS_COLORS['Cancelled'];
 
     const styleBase = {
       position: 'absolute',
-      backgroundColor: STATUS_COLORS[status] || STATUS_COLORS['Pending'],
+      backgroundColor: finalColor,
       border: '2px solid white',
       boxShadow: '0 0 15px rgba(255,255,255,0.8)',
       zIndex: 10,
@@ -123,7 +153,6 @@ const RepairVisualizer = () => {
       animation: 'pulse 2s infinite'
     };
 
-    // Handle Array (e.g., 4 Wheels) or Single Object (1 Engine)
     const zonesToRender = Array.isArray(coords) ? coords : [coords];
 
     return zonesToRender.map((pos, index) => (
@@ -136,24 +165,27 @@ const RepairVisualizer = () => {
           left: pos.left,
           width: pos.width,
           height: pos.height,
-          borderRadius: pos.borderRadius
+          borderRadius: pos.borderRadius || '5px'
         }}
-        title={`${category}: ${status}`}
+        title={`${category}: ${statusKey}`}
       >
         <span className="zone-label">{category}</span>
       </div>
     ));
   };
 
-  return (
+return (
     <div className="visualizer-page">
       <DashboardNavbar user={user} onLogout={handleLogout} />
 
       <div className="visualizer-content">
         
-        {/* LEFT PANEL: REPAIR LIST */}
+        {/* --- LEFT SIDEBAR --- */}
         <div className="repair-sidebar">
-          <h3>Active Repairs</h3>
+          <div className="repair-sidebar-header">
+             <h3>{repairId ? "Tracking Repair" : "Active Workshop Jobs"}</h3>
+          </div>
+
           <div className="repair-list">
             {repairs.map(repair => (
               <div 
@@ -162,32 +194,51 @@ const RepairVisualizer = () => {
                 onClick={() => setSelectedRepair(repair)}
               >
                 <div className="repair-header">
-                  <strong>{repair.vehicle?.make || 'Unknown'} {repair.vehicle?.model}</strong>
-                  <span className={`badge ${repair.status?.toLowerCase().replace(' ', '-')}`}>
+                  <span className="vehicle-title">{repair.vehicle?.make} {repair.vehicle?.model}</span>
+                  <span className={`badge ${repair.status?.toLowerCase().replace(/\s+/g, '-')}`}>
                     {repair.status}
                   </span>
                 </div>
-                <p className="repair-desc">{repair.service?.name || repair.description}</p>
-                <small>{repair.vehicle?.plate_number}</small>
+                
+                <div className="repair-desc">
+                  {repair.service?.name}
+                </div>
+                <span className="repair-sub-desc">
+                   {repair.description ? (repair.description.length > 50 ? repair.description.substring(0,50)+'...' : repair.description) : 'No notes provided'}
+                </span>
               </div>
             ))}
-            {repairs.length === 0 && <p className="no-data">No active repairs found.</p>}
+            {repairs.length === 0 && <div style={{padding:'20px', color:'#94a3b8', textAlign:'center'}}>No active repairs found.</div>}
           </div>
+          
+          {repairId && selectedRepair && (
+              <Link 
+                to={`/receptionist/client/${selectedRepair.vehicle?.client_id}/${selectedRepair.vehicle?.owner_name}`} 
+                className="back-link-container"
+              >
+                <i className="fa-solid fa-arrow-left" style={{marginRight:'8px'}}></i>
+                Back to Client
+              </Link>
+          )}
         </div>
 
-        {/* RIGHT PANEL: VISUALIZATION */}
+        {/* --- RIGHT STAGE --- */}
         <div className="visualizer-stage">
-          
           {selectedRepair ? (
-            <>
+            <div className="car-card-wrapper">
+              
               <div className="stage-header">
-                <h2>Visualizing: {selectedRepair.vehicle?.plate_number}</h2>
-                <div className="view-controls">
-                  {/* These buttons switch the image angle */}
-                  {['side', 'front', 'top', 'back', 'interior'].map(view => (
+                <div>
+                    <h2 style={{margin:0, fontSize:'1.1rem'}}>{selectedRepair.vehicle?.plate_number}</h2>
+                    <span style={{color:'#64748b', fontSize:'0.85rem'}}>Visualizing Vehicle Status</span>
+                </div>
+                
+                {/* MOVED: View Controls inside the header for cleaner look */}
+                 <div className="control-bar">
+                  {['front', 'left', 'right', 'back', 'top', 'bottom'].map(view => (
                     <button 
                       key={view} 
-                      className={currentView === view ? 'active' : ''}
+                      className={`view-btn ${currentView === view ? 'active' : ''}`}
                       onClick={() => setCurrentView(view)}
                     >
                       {view.charAt(0).toUpperCase() + view.slice(1)}
@@ -197,28 +248,26 @@ const RepairVisualizer = () => {
               </div>
 
               <div className="car-container">
-                {/* 1. The Car Image */}
                 <img 
-                  src={CAR_IMAGES.sedan[currentView] || CAR_IMAGES.sedan.side} 
-                  alt="Vehicle View" 
+                  src={CAR_IMAGES.sedan[currentView]} 
+                  alt={`${currentView} View`} 
                   className="vehicle-image"
+                  style={getImageStyle()} 
                 />
-                
-                {/* 2. The Colored Overlay */}
                 {renderZone()}
               </div>
 
               <div className="legend">
-                 <div className="legend-item"><span className="dot pending"></span> Pending</div>
-                 <div className="legend-item"><span className="dot progress"></span> In Progress</div>
-                 <div className="legend-item"><span className="dot completed"></span> Completed</div>
+                 <div className="legend-item"><span className="dot pending" style={{background:'orange'}}></span> Pending</div>
+                 <div className="legend-item"><span className="dot progress" style={{background:'#0d6efd'}}></span> In Progress</div>
+                 <div className="legend-item"><span className="dot completed" style={{background:'#28a745'}}></span> Completed</div>
               </div>
-            </>
+
+            </div>
           ) : (
-             <div className="empty-state">Select a repair to visualize</div>
+             <div className="empty-state">Select a repair to visualize details.</div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ class ResetPasswordMail extends Mailable
     public function build()
     {
         // 2. Build the email view
-        return $this->subject('Reset Your Password - Garage PFE')
+        return $this->subject('Reset Your Password - MecaPro')
                     ->view('emails.reset_password'); 
     }
 }

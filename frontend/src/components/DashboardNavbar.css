@@ -43,7 +43,8 @@
 .user-name {
   margin: 0;
   color: #2979ff; /* Blue Brand Color */
-  font-size: 22px;
+  font-size: 24px;
+  padding-bottom: 3px;
 }
 
 /* Right Side */

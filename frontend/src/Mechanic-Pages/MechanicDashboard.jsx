@@ -1,5 +1,4 @@
-//import { useState, useEffect, useCallback } from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
@@ -14,9 +13,9 @@ const MechanicDashboard = () => {
         role: localStorage.getItem('USER_ROLE') || 'Mechanic'
     });
 
-    const [repairs, setRepairs] = useState([]); // Renamed from 'tasks' to 'repairs'
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null); // Added for UI feedback
+    const [repairs, setRepairs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState(null);
     const [messageType, setMessageType] = useState('');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
@@ -30,16 +29,25 @@ const MechanicDashboard = () => {
         }, 4000);
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'ASAP';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+
     // --- Data Fetching ---
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         const token = localStorage.getItem('ACCESS_TOKEN');
 
         try {
-            // 1. Fetch User Info
-            const userRes = await axios.get('http://127.0.0.1:8000/api/user', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const [userRes, jobsRes] = await Promise.all([
+                axios.get('http://127.0.0.1:8000/api/user', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get('http://127.0.0.1:8000/api/mechanic/jobs', { headers: { Authorization: `Bearer ${token}` } })
+            ]);
 
             const userData = {
                 name: userRes.data.name || userRes.data.user?.name,
@@ -49,11 +57,7 @@ const MechanicDashboard = () => {
             localStorage.setItem('USER_NAME', userData.name);
             localStorage.setItem('USER_ROLE', userData.role);
 
-            // 2. Fetch Assigned Repairs
-            const jobsRes = await axios.get('http://127.0.0.1:8000/api/mechanic/jobs', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setRepairs(jobsRes.data);
+            setRepairs(jobsRes.data.data || []);
 
         } catch (err) {
             console.error("Dashboard Error:", err);
@@ -78,6 +82,11 @@ const MechanicDashboard = () => {
     const handleStatusUpdate = async (repairId, newStatus) => {
         const token = localStorage.getItem('ACCESS_TOKEN');
 
+        const previousRepairs = [...repairs];
+        setRepairs(prevRepairs => 
+            prevRepairs.map(r => r.id === repairId ? { ...r, status: newStatus } : r)
+        );
+
         try {
             await axios.patch(
                 `http://127.0.0.1:8000/api/mechanic/jobs/${repairId}`,
@@ -85,10 +94,10 @@ const MechanicDashboard = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             
-            showMessage('Job status updated successfully', 'success');
-            fetchDashboardData(); 
+            showMessage(`Repair Status have been modified successfully`, 'success');
         } catch (err) {
             console.error(err);
+            setRepairs(previousRepairs);
             showMessage('Failed to update status.', 'error');
         }
     };
@@ -106,73 +115,111 @@ const MechanicDashboard = () => {
         navigate('/login');
     };
 
-    // --- KPI Calculation ---
-    const getKPIData = () => {
+    // --- KPI Calculation (Memoized) ---
+    const kpiData = useMemo(() => {
+        if (!Array.isArray(repairs)) return { ActiveJobs: 0, completed: 0, pending: 0 };
+        // Normalize status for KPI calculation to handle case sensitivity
+        const normalize = (s) => s?.toLowerCase() || '';
         return {
-            // 1. Total Assigned: Everything NOT completed (Pending + In Progress)
-            // This ensures yesterday's unfinished jobs are still counted here.
-            ActiveJobs: repairs.filter(r => r.status !== 'completed').length,
-
-            // 2. Completed: Just the finished jobs
-            completed: repairs.filter(r => r.status === 'completed').length,
-
-            // 3. Awaiting: Jobs that haven't started yet (Strictly Pending)
-            // We exclude 'progress' here because those are already started.
-            pending: repairs.filter(r => r.status === 'pending' || r.status === 'confirmed').length
+            ActiveJobs: repairs.filter(r => !normalize(r.status).includes('completed')).length,
+            completed: repairs.filter(r => normalize(r.status).includes('completed')).length,
+            pending: repairs.filter(r => normalize(r.status).includes('pending')).length
         };
+    }, [repairs]);
+
+    // --- Get all services for a job ---
+    const getJobServices = (job) => {
+        if (job.services && Array.isArray(job.services) && job.services.length > 0) {
+            return job.services;
+        }
+        if (job.service) {
+            return [job.service];
+        }
+        return [];
     };
 
-    const kpiData = getKPIData();
+    // --- Custom Dropdown Component (FIXED) ---
+    const StatusDropdown = ({ currentStatus, onStatusChange }) => {
+        const [isOpen, setIsOpen] = useState(false);
 
+        // CONFIG: Added 'apiValue' to send exact string DB expects
+        const statusConfig = {
+            pending: { 
+                label: 'Pending', 
+                // icon: 'fa-hourglass-start', 
+                colorClass: 'pending',
+                apiValue: 'pending' 
+            },
+            progress: { 
+                label: 'In Progress', 
+                // icon: 'fa-wrench', 
+                colorClass: 'progress',
+                apiValue: 'in_progress' // FIX: Uses snake_case for API
+            },
+            completed: { 
+                label: 'Completed', 
+                // icon: 'fa-check-circle', 
+                colorClass: 'completed',
+                apiValue: 'completed' 
+            }
+        };
 
-    // --- Custom Dropdown Component ---
-const StatusDropdown = ({ currentStatus, onStatusChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
+        // FIX: Fuzzy matching helper to handle "In Progress" vs "in_progress" vs "progress"
+        const getStatusKey = (status) => {
+            if (!status) return 'pending';
+            const s = status.toLowerCase();
+            if (s.includes('progress')) return 'progress';
+            if (s.includes('completed')) return 'completed';
+            return 'pending';
+        };
 
-    // Configuration for colors and icons
-    const statusConfig = {
-        pending: { label: 'Pending', icon: 'fa-hourglass-start', colorClass: 'pending' },
-        progress: { label: 'In Progress', icon: 'fa-wrench', colorClass: 'progress' },
-        completed: { label: 'Completed', icon: 'fa-check-circle', colorClass: 'completed' }
-    };
+        const activeKey = getStatusKey(currentStatus);
+        const currentConfig = statusConfig[activeKey];
 
-    const currentConfig = statusConfig[currentStatus] || statusConfig.pending;
+        const handleSelect = (e, key) => {
+            e.stopPropagation();
+            // FIX: Send the apiValue (e.g. 'in_progress') instead of the key
+            onStatusChange(statusConfig[key].apiValue);
+            setIsOpen(false);
+        };
 
-    const handleSelect = (status) => {
-        onStatusChange(status);
-        setIsOpen(false);
-    };
-
-    return (
-        <div className="custom-dropdown-wrapper" onMouseLeave={() => setIsOpen(false)}>
-            <button 
-                className={`dropdown-trigger ${currentConfig.colorClass}`} 
-                onClick={() => setIsOpen(!isOpen)}
+        return (
+            <div 
+                className="custom-dropdown-wrapper" 
+                onMouseLeave={() => setIsOpen(false)}
+                onClick={(e) => e.stopPropagation()}
             >
-                <span>{currentConfig.label}</span>
-            </button>
+                <button 
+                    className={`dropdown-trigger ${currentConfig.colorClass}`} 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(!isOpen);
+                    }}
+                >
+                    <i className={` ${currentConfig.icon}`}></i>
+                    <span>{currentConfig.label}</span>
+                </button>
 
-            {isOpen && (
-                <div className="dropdown-menu">
-                    {Object.entries(statusConfig).map(([key, config]) => (
-                        <div 
-                            key={key} 
-                            className={`dropdown-item ${key === currentStatus ? 'active' : ''}`}
-                            onClick={() => handleSelect(key)}
-                        >
-                            <span>{config.label}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
+                {isOpen && (
+                    <div className="dropdown-menu">
+                        {Object.keys(statusConfig).map((key) => (
+                            <div 
+                                key={key} 
+                                className={`dropdown-item ${key === activeKey ? 'active' : ''}`}
+                                onClick={(e) => handleSelect(e, key)}
+                            >
+                                <i className={`fa-solid ${statusConfig[key].icon}`}></i>
+                                <span>{statusConfig[key].label}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="dashboard-container">
-
             <header className="dashboard-header">
                 <DashboardNavbar 
                     user={user} 
@@ -194,7 +241,7 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                                 <h2>{kpiData.ActiveJobs}</h2>
                             </div>
                             <div className="stat-icon blue">
-                              <i className="fa-solid fa-wrench"></i>
+                                <i className="fa-solid fa-wrench"></i>
                             </div>
                         </div>
 
@@ -204,17 +251,17 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                                 <h2>{kpiData.completed}</h2>
                             </div>
                             <div className="stat-icon green">
-                              <i className="fa-solid fa-check"></i>
+                                <i className="fa-solid fa-check"></i>
                             </div>
                         </div>
 
                         <div className="stat-card">
                             <div className="stat-info">
-                                <span>Awaiting tasks </span>
+                                <span>Awaiting tasks</span>
                                 <h2>{kpiData.pending}</h2>
                             </div>
                             <div className="stat-icon orange">
-                              <i className="fa-solid fa-clock-rotate-left"></i>
+                                <i className="fa-solid fa-clock-rotate-left"></i>
                             </div>
                         </div>
                     </div>
@@ -223,7 +270,6 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
                 <section className="tasks-section">
                     <div className="section-header">
                         <h2>My Job List</h2>
-                        {/* Message Alert UI */}
                         {message && (
                             <div className={`alert-message ${messageType}`} style={{marginLeft: '20px', display:'inline-block', padding: '5px 10px', borderRadius:'4px'}}>
                                 <span>{message}</span>
@@ -233,57 +279,75 @@ const StatusDropdown = ({ currentStatus, onStatusChange }) => {
 
                     <div className="task-list">
                         {loading ? (
-                            <p>Loading jobs...</p>
+                            <div className="section-loading">
+                                <div className="spinner-mini"></div>
+                                <span>Loading jobs...</span>
+                            </div>
                         ) : repairs.length === 0 ? (
                             <div className="no-tasks">
                                 <p>🎉 You have no assigned jobs at the moment.</p>
                             </div>
                         ) : (
-                            // Renamed 'task' to 'job' to match Receptionist style
                             repairs.map(job => (
                                 <div 
                                     key={job.id} 
-                                    className="task-card"
+                                    className={`task-card ${job.status?.toLowerCase().includes('completed') ? 'card-completed' : ''}`}
                                     onClick={() => {
-                                        // Only navigate if job is not completed
-                                        if (job.status !== 'completed') {
+                                        if (!job.status?.toLowerCase().includes('completed')) {
                                             navigate(`/mechanic/repair/${job.id}`);
                                         }
                                     }}
                                     style={{ 
-                                        cursor: job.status !== 'completed' ? 'pointer' : 'default' 
+                                        cursor: !job.status?.toLowerCase().includes('completed') ? 'pointer' : 'default',
+                                        opacity: job.status?.toLowerCase().includes('completed') ? 0.7 : 1 
                                     }}
                                 >
                                     <div className="task-details">
-                                        <h3>{job.description}</h3>
-                                        <span className="car-model">
-                                            <i className="fa-solid fa-car"></i> {job.vehicle?.make} {job.vehicle?.model} ({job.vehicle?.license_plate})
-                                        </span>
+                                        {/* Services Badges */}
+                                        <div className="services-badges">
+                                            {getJobServices(job).map((service, idx) => (
+                                                <span key={idx} className="service-badge">
+                                                    {service.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Client Name */}
                                         <span className="client-name">
-                                            <i className="fa-regular fa-user"></i> {job.vehicle?.client?.name || job.vehicle?.user?.name || 'Unknown Client'}
+                                            <i className="fa-solid fa-user"></i> 
+                                            {job.vehicle?.owner_name || 'Unknown Client'}
                                         </span>
+                                        
+                                        {/* Car Model */}
+                                        <span className="car-model">
+                                            <i className="fa-solid fa-car"></i> 
+                                            {job.vehicle?.make} {job.vehicle?.model} ( {job.vehicle?.plate_number || 'N/A'} )
+                                        </span>
+                                        
+                                        {/* Due Date */}
                                         <span className="due-date">
-                                            <i className="fa-regular fa-calendar"></i> Due: {job.date_end ? new Date(job.date_end).toLocaleDateString() : 'ASAP'}
+                                            <i className="fa-solid fa-calendar"></i> Due: {formatDate(job.date_end)}
+                                        </span>
+                                        
+                                        {/* Description */}
+                                        <span className='DESC' title={job.description}>
+                                            <i className="fa-solid fa-circle-info"></i> 
+                                            {job.description ? (job.description.length > 50 ? job.description.substring(0, 50) + '...' : job.description) : 'No description'}
                                         </span>
                                     </div>
 
-                                  <div className="task-action" onClick={(e) => e.stopPropagation()}>
-                                      <label style={{fontSize: '12px', color: '#888', display: 'block', marginBottom: '4px'}}>
-                                          Current Status:
-                                      </label>
-                                      
-                                      <StatusDropdown 
-                                          currentStatus={job.status} 
-                                          onStatusChange={(newStatus) => handleStatusUpdate(job.id, newStatus)} 
-                                      />
-                                  </div>
+                                    <div className="task-action" onClick={(e) => e.stopPropagation()}>
+                                        <StatusDropdown 
+                                            currentStatus={job.status} 
+                                            onStatusChange={(newStatus) => handleStatusUpdate(job.id, newStatus)} 
+                                        />
+                                    </div>
                                 </div>
                             ))
                         )}
                     </div>
                 </section>
             </div>
-
         </div>
     );
 };

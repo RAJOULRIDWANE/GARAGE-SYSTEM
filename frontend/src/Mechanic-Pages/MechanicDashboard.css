@@ -21,7 +21,7 @@
 .section-header h2 {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #111827; /* Dark almost black */
+    color: #111827;
     margin: 0;
 }
 
@@ -32,7 +32,6 @@
 }
 
 /* --- 3. KPI Cards (Top Row) --- */
-/* Matches the "Today's Tasks", "Tasks Finished" cards */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -45,26 +44,24 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 24px;
-    
-    /* Flex settings for side-by-side layout */
     display: flex;
-    flex-direction: row;       /* Forces horizontal alignment */
-    justify-content: space-between; /* Pushes Text to left, Icon to right */
-    align-items: center;       /* Centers them vertically */
-    
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.stat-card .orange i{
+.stat-card .orange i {
     color: #fb5607;
 }
-.stat-card .green i{
+
+.stat-card .green i {
     color: #57cc99;
 }
-.stat-card .blue i{
+
+.stat-card .blue i {
     color: #2979ff;
 }
-
 
 .stat-info {
     display: flex;
@@ -74,7 +71,7 @@
 .stat-info span {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #6b7280; /* Gray text */
+    color: #6b7280;
     margin-bottom: 8px;
 }
 
@@ -86,7 +83,6 @@
     line-height: 1;
 }
 
-/* The Round Icons */
 .stat-icon {
     width: 45px;
     height: 45px;
@@ -97,25 +93,22 @@
     font-size: 1.1rem;
 }
 
-/* Specific Colors from your Image */
 .stat-icon.blue {
-    background-color: #e0f2fe; /* Light Blue BG */
-    color: #0ea5e9;           /* Blue Icon */
+    background-color: #e0f2fe;
+    color: #0ea5e9;
 }
 
 .stat-icon.green {
-    background-color: #dcfce7; /* Light Green BG */
-    color: #22c55e;           /* Green Icon */
+    background-color: #dcfce7;
+    color: #22c55e;
 }
 
 .stat-icon.orange {
-    background-color: #ffedd5; /* Light Orange BG */
-    color: #f97316;           /* Orange Icon */
+    background-color: #ffedd5;
+    color: #f97316;
 }
 
-
 /* --- 4. Task List Container --- */
-/* That large white box surrounding the list in your image */
 .tasks-section {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -130,7 +123,6 @@
 }
 
 /* --- 5. The Task Item Cards --- */
-/* Each row (Engine Diagnostics, Oil Change, etc.) */
 .task-list {
     display: flex;
     flex-direction: column;
@@ -144,117 +136,99 @@
     padding: 20px 25px;
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Keeps status aligned with text */
+    align-items: flex-start;
     transition: box-shadow 0.2s;
+    gap: 20px;
 }
 
 .task-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* Left Side Typography */
 .task-details {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
+    flex: 1;
 }
 
-/* "Engine Diagnostics" */
-.task-details h3 {
-    margin: 0;
-    font-size: 1rem; 
-    font-weight: 700;
-    color: #111827;
+/* Services Badges Container */
+.services-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-/* "volkswagen Golf 8" */
+/* Service Badge Styling */
+.service-badge {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0284c7;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Client Name */
+.task-details .client-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Car Model */
 .task-details .car-model {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #374151; /* Slightly lighter black */
-    margin-top: 4px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* "Client : Hamza..." */
-.task-details .client-name {
-    font-size: 0.85rem;
+/* Due Date */
+.task-details .due-date {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Description */
+.task-details .DESC {
+    font-size: 0.9rem;
     font-weight: 400;
-    color: #6b7280; /* Gray */
-    margin-top: 2px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-
-.task-details i{
+.task-details i {
     color: #2979ff;
     font-size: 14px;
+    min-width: 14px;
 }
 
-
-
+/* Right Side Action */
 .task-action {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
-
-.task-action label {
-    display: none !important; /* Hide "Current Status" label to match image */
-}
-
-.status-dropdown {
-    appearance: none;          /* Hides default arrow */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    
-    font-size: 0.75rem;        /* Small text like image */
-    font-weight: 600;
-    text-transform: capitalize;
-    padding: 6px 16px;         /* Pill padding */
-    border-radius: 50px;       /* Perfect rounded pill */
-    background-color: transparent; /* Transparent center */
-    cursor: pointer;
-    text-align: center;
-    min-width: 100px;
-    transition: all 0.2s ease;
-}
-
-.status-dropdown.completed {
-    border: 1px solid #34d399; 
-    color: #059669;           
-}
-
-.status-dropdown.progress,
-.status-dropdown.in-progress {
-    border: 1px solid #60a5fa; 
-    color: #2563eb;           
-}
-
-.status-dropdown.pending {
-    border: 1px solid #fb923c; 
-    color: #ea580c;           
-}
-
-.status-dropdown:hover {
-    background-color: #f9fafb;
-}
-
-/* --- 7. Responsive Fixes --- */
-@media (max-width: 600px) {
-    .task-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    .task-action {
-        width: 100%;
-        justify-content: flex-end;
-    }
-}
-
 
 /* --- Professional Custom Dropdown --- */
-
 .custom-dropdown-wrapper {
-    position: relative; /* Anchors the absolute menu */
+    position: relative;
     display: inline-block;
 }
 
@@ -263,47 +237,49 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 3px 25px 5px 25px;
+    padding: 6px 20px;
     border-radius: 50px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     background: #ffffff;
     transition: all 0.2s ease;
-    justify-content: space-between;
+    justify-content: center;
+    border: 1px solid;
 }
 
-.dropdown-trigger.pending { border: 1px solid #fb923c; color: #ea580c; }
-.dropdown-trigger.progress { border: 1px solid #60a5fa; color: #2563eb; }
-.dropdown-trigger.completed { border: 1px solid #34d399; color: #059669; }
+.dropdown-trigger.pending {
+    border-color: #fb923c;
+    color: #ea580c;
+}
 
-/* Hover effect for trigger */
+.dropdown-trigger.progress {
+    border-color: #60a5fa;
+    color: #2563eb;
+}
+
+.dropdown-trigger.completed {
+    border-color: #34d399;
+    color: #059669;
+}
+
 .dropdown-trigger:hover {
     background-color: #f9fafb;
     transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-/* The Rotating Arrow */
-.dropdown-trigger .arrow {
-    font-size: 0.7rem;
-    transition: transform 0.2s ease;
-}
-.dropdown-trigger .arrow.open {
-    transform: rotate(180deg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* The Floating Menu */
 .dropdown-menu {
     position: absolute;
-    top: 115%; /* Slight gap below trigger */
+    top: 115%;
     right: 0;
     width: 180px;
     background: #ffffff;
     border: 1px solid #f3f4f6;
     border-radius: 12px;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 50; /* Ensures it sits on top of other content */
+    z-index: 50;
     padding: 6px;
     animation: fadeIn 0.2s ease-out;
 }
@@ -326,35 +302,101 @@
     background-color: #f3f4f6;
 }
 
-.dropdown-item.active:first-child {
+.dropdown-item.active:nth-child(1) {
     background-color: #ffedd5;
     color: #ea580c;
 }
-
 
 .dropdown-item.active:nth-child(2) {
     background-color: #e0f2fe;
     color: #1d4ed8;
 }
 
-.dropdown-item.active:last-child {
+.dropdown-item.active:nth-child(3) {
     background-color: #dcfce7;
     color: #059669;
 }
 
-
-.pending-text { color: #ea580c; }
-.progress-text { color: #2563eb; }
-.completed-text { color: #059669; }
-
-.check-icon {
-    margin-left: auto; /* Pushes check to far right */
-    color: #2563eb;
-    font-size: 0.8rem;
-}
-
 /* Animation */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .task-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .task-action {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .services-badges {
+        margin-bottom: 12px;
+    }
+}
+
+/* --- Loading & Empty States --- */
+.section-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 10px;
+    color: #6b7280;
+}
+
+.no-tasks {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+/* Spinner */
+.spinner-mini {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #2979ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Alert Message */
+.alert-message {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.alert-message.success {
+    background-color: #dcfce7;
+    color: #059669;
+}
+
+.alert-message.error {
+    background-color: #fee2e2;
+    color: #dc2626;
 }

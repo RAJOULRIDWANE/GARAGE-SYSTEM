@@ -104,6 +104,8 @@ const UserProfile = () => {
 
       <div className="dashboard-content">
 
+        <div className="profile-wrapper">
+
         <div className="back-link-container">
           <Link 
             to={`/${user.role ? user.role.toLowerCase() : 'receptionist'}/dashboard`} 
@@ -116,8 +118,6 @@ const UserProfile = () => {
         <div className="header-actions">
           <h1>My Profile</h1>
         </div>
-
-        <div className="profile-wrapper">
           
           {/* CARD 1: User Info (Read Only) */}
           <div className="table-card profile-card">

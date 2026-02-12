@@ -9,6 +9,10 @@ class RepairResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // 1. Prepare services collection
+        $allServices = $this->services ?? collect([]);
+        $primaryService = $allServices->first();
+
         return [
             'id' => $this->id,
             'description' => $this->description,
@@ -16,21 +20,58 @@ class RepairResource extends JsonResource
             'status' => $this->status,
             'date_end' => $this->date_end,
             'invoice_number' => $this->invoice_number,
-            
-            // Client & Vehicle Info
+            'created_at' => $this->created_at,
+
+            // --- VEHICLE (Hyper-Safe Check) ---
             'vehicle' => $this->vehicle ? [
+                'id' => $this->vehicle->id,
                 'make' => $this->vehicle->make,
                 'model' => $this->vehicle->model,
-                'plate' => $this->vehicle->plate_number,
-                'owner' => $this->vehicle->client ? $this->vehicle->client->name : 'Unknown'
+                'plate_number' => $this->vehicle->plate_number ?? $this->vehicle->license_plate ?? 'N/A',
+                'client_id' => $this->vehicle->client_id ?? $this->vehicle->user_id ?? null,
+                'owner_name' => ($this->vehicle->client) ? $this->vehicle->client->name : 'Guest'
             ] : null,
 
-            // Mechanic Info
-            'mechanic' => $this->mechanic ? $this->mechanic->name : 'Unassigned',
+            // --- MECHANIC ---
+            'mechanic' => $this->mechanic ? [
+                'id' => $this->mechanic->id,
+                'name' => $this->mechanic->name,
+            ] : null,
 
-            // --- NEW: Service Info ---
-            'service_name' => $this->service ? $this->service->name : 'Custom Repair',
-            'service_zone' => $this->service ? $this->service->zone : 'general',
+            // --- ALL SERVICES (Used by History/Lists) ---
+            'services' => $allServices->map(function($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'zone' => $service->zone ?? 'general',
+                    'price' => $service->price,
+                ];
+            }),
+
+            // --- SINGLE SERVICE (For legacy UI support) ---
+            'service' => $primaryService ? [
+                'id' => $primaryService->id,
+                'name' => $primaryService->name,
+                'zone' => $primaryService->zone ?? 'general',
+                'price' => $primaryService->price,
+            ] : [
+                'id' => 0,
+                'name' => 'Custom Repair',
+                'zone' => 'body',
+                'price' => 0
+            ],
+            
+            // --- PARTS (If loaded) ---
+            'parts' => $this->whenLoaded('parts', function() {
+                return $this->parts->map(function($part) {
+                    return [
+                        'id' => $part->id,
+                        'name' => $part->name,
+                        'quantity' => $part->pivot->quantity ?? 1,
+                        'price' => $part->pivot->price ?? $part->price,
+                    ];
+                });
+            }),
         ];
     }
 }

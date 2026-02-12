@@ -19,6 +19,9 @@ const ReceptionistDashboard = () => {
   const [mechanics, setMechanics] = useState([]); 
   const [services, setServices] = useState([]); 
 
+  // --- Loading State ---
+  const [loading, setLoading] = useState(true);
+
   // --- Filter State ---
   const [dashboardSearch, setDashboardSearch] = useState(''); 
   
@@ -34,16 +37,16 @@ const ReceptionistDashboard = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientVehicles, setClientVehicles] = useState([]);
 
-  // --- SERVICE SEARCH STATE (NEW) ---
+  // --- SERVICE SEARCH & SELECTION STATE ---
   const [serviceSearch, setServiceSearch] = useState('');
   const [showServiceList, setShowServiceList] = useState(false);
-  
+  const [selectedServices, setSelectedServices] = useState([]); // Stores array of service objects
+
   const [formData, setFormData] = useState({
     vehicle_id: '',
     mechanic_id: '',
-    service_id: '', 
     description: '', 
-    cost: '',        
+    cost: '', // Calculated automatically
     date_end: '' 
   });
 
@@ -62,6 +65,7 @@ const ReceptionistDashboard = () => {
   };
 
   const fetchDashboardData = async () => {
+    setLoading(true); 
     try {
         const token = localStorage.getItem('ACCESS_TOKEN');
         const clientRes = await axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', {
@@ -85,6 +89,8 @@ const ReceptionistDashboard = () => {
     } catch (err) { 
         console.error(err);
         if(err.response && err.response.status === 401) handleLogout();
+    } finally {
+        setLoading(false); 
     }
   };
 
@@ -161,41 +167,100 @@ const ReceptionistDashboard = () => {
     } catch (err) { showMessage("Could not load vehicles", "error"); }
   };
 
-  // --- SERVICE SEARCH LOGIC (NEW) ---
+  // --- SERVICE SEARCH & ADD LOGIC ---
   const filteredServices = services.filter(service => {
-     if (!serviceSearch) return true; // Show all if empty (or restrict if list is too long)
+     if (!serviceSearch) return true; 
      const searchLower = serviceSearch.toLowerCase();
      const nameMatch = service.name.toLowerCase().includes(searchLower);
      const zoneMatch = service.zone && service.zone.toLowerCase().includes(searchLower);
      return nameMatch || zoneMatch;
   });
 
+  const calculateTotal = (servicesList) => {
+    const total = servicesList.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
+    setFormData(prev => ({ ...prev, cost: total }));
+  };
+
   const selectService = (service) => {
-     setFormData({
-         ...formData,
-         service_id: service.id,
-         cost: service.price
-     });
-     setServiceSearch(service.name); // Fill input with name
-     setShowServiceList(false);      // Close dropdown
+      // Prevent duplicates
+      if (selectedServices.some(s => s.id === service.id)) {
+          setServiceSearch('');
+          setShowServiceList(false);
+          return;
+      }
+
+      const updatedList = [...selectedServices, service];
+      setSelectedServices(updatedList);
+      calculateTotal(updatedList); // Update cost
+
+      setServiceSearch(''); 
+      setShowServiceList(false);
+  };
+
+  const removeService = (serviceId) => {
+      const updatedList = selectedServices.filter(s => s.id !== serviceId);
+      setSelectedServices(updatedList);
+      calculateTotal(updatedList); // Update cost
+  };
+
+  // --- SPLIT DATE/TIME LOGIC ---
+  // Helper to get parts safe
+  const getDatePart = () => formData.date_end ? formData.date_end.split('T')[0] : '';
+  const getTimePart = () => formData.date_end ? formData.date_end.split('T')[1] : '';
+
+  const handleDatePartChange = (e) => {
+    const newDate = e.target.value; // YYYY-MM-DD
+    // If user clears date, clear everything
+    if (!newDate) {
+        setFormData({ ...formData, date_end: '' });
+        return;
+    }
+    // If there was a time selected, keep it. If not, default to 08:00
+    const currentTime = getTimePart() || '08:00';
+    setFormData({ ...formData, date_end: `${newDate}T${currentTime}` });
+  };
+
+  const handleTimePartChange = (e) => {
+    const newTime = e.target.value; // HH:mm
+    const currentDate = getDatePart();
+    
+    // Only update if we have a date (though input is disabled if no date)
+    if (currentDate && newTime) {
+       setFormData({ ...formData, date_end: `${currentDate}T${newTime}` });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.vehicle_id || !formData.mechanic_id || !formData.service_id || !formData.date_end) {
-      showMessage("Please fill in ALL fields.", "error"); return;
+
+    // Validate
+    if (!formData.vehicle_id || !formData.mechanic_id || !formData.date_end) {
+      showMessage("Please fill in required fields.", "error"); return;
     }
+    if (selectedServices.length === 0) {
+      showMessage("Please select at least one service.", "error"); return;
+    }
+
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
-      const response = await axios.post('http://127.0.0.1:8000/api/receptionist/jobs', formData, {
+      
+      // PREPARE PAYLOAD FOR BACKEND
+      const payload = {
+          ...formData,
+          service_ids: selectedServices.map(s => s.id) // Send Array of IDs
+      };
+
+      const response = await axios.post('http://127.0.0.1:8000/api/receptionist/jobs', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (response.status === 200 || response.status === 201) {
         setShowModal(false);
-        // Reset Form
-        setFormData({ vehicle_id: '', mechanic_id: '', service_id: '', description: '', cost: '', date_end: '' });
+        // Reset Form & Services
+        setFormData({ vehicle_id: '', mechanic_id: '', description: '', cost: '', date_end: '' });
+        setSelectedServices([]); 
         setSearchQuery('');
-        setServiceSearch(''); // Reset service search
+        setServiceSearch('');
         setSelectedClient(null);
         fetchDashboardData(); 
         showMessage("Appointment Created Successfully!", "success");
@@ -250,14 +315,22 @@ const ReceptionistDashboard = () => {
                 <tr><th>Client Name</th><th>Total Vehicles</th><th>Total Repairs History</th><th>Action</th></tr>
             </thead>
             <tbody>
-                {filteredClients.length > 0 ? filteredClients.map(client => (
+                {loading ? (
+                    <tr>
+                        <td colSpan="4" style={{textAlign: "center", padding: "40px"}}>
+                            <i className="fa-solid fa-spinner fa-spin" style={{fontSize: "24px", color: "#005DFFFF", marginBottom: "10px"}}></i>
+                            <p>Loading clients...</p>
+                        </td>
+                    </tr>
+                ) : filteredClients.length > 0 ? (
+                    filteredClients.map(client => (
                     <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
                         <td><strong>{client.name}</strong><div className="sub-text">{client.email}</div></td>
                         <td>{client.vehicles?.length || 0} Vehicles</td>
                         <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
                         <td><button className="action-btn view-btn"><i className="fa-solid fa-eye"></i> View History</button></td>
                     </tr>
-                )) : (
+                ))) : (
                     <tr><td colSpan="4" style={{textAlign: "center", padding: "20px"}}>No clients found.</td></tr>
                 )}
             </tbody>
@@ -289,28 +362,47 @@ const ReceptionistDashboard = () => {
                 </select>
               </div>
 
-              {/* UPDATED SERVICE SEARCHABLE INPUT */}
+              {/* --- SELECTED SERVICES LIST (TAGS) --- */}
+              {selectedServices.length > 0 && (
+                <div className="selected-services-container" style={{marginBottom: '15px'}}>
+                    <label style={{display:'block', marginBottom:'5px', fontSize:'0.9rem'}}>Selected Services:</label>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                        {selectedServices.map(s => (
+                            <span key={s.id} style={{
+                                background: '#e3f2fd', color: '#005DFFFF', 
+                                padding: '6px 10px', borderRadius: '15px', fontSize: '0.85rem',
+                                display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #b3d7ff'
+                            }}>
+                                {s.name} - {s.zone} ({s.price} MAD)
+                                <i className="fa-solid fa-xmark" 
+                                   style={{cursor: 'pointer', color: '#ff4d4d'}}
+                                   onClick={() => removeService(s.id)}>
+                                </i>
+                            </span>
+                        ))}
+                    </div>
+                </div>
+              )}
+
+              {/* --- SEARCH TO ADD SERVICE --- */}
               <div className="form-group" style={{position: 'relative'}}>
-                  <label>Select Service :</label>
+                  <label>Add Service :</label>
                   <input 
                       type="text"
                       className="form-control"
-                      placeholder="Type to search service..."
+                      placeholder="Type to search and add services..."
                       value={serviceSearch}
                       onChange={(e) => {
                           setServiceSearch(e.target.value);
                           setShowServiceList(true);
-                          setFormData({...formData, service_id: ''}); // Clear ID if typing new
                       }}
                       onFocus={() => setShowServiceList(true)}
-                      // Delayed blur to allow clicking on list items
                       onBlur={() => setTimeout(() => setShowServiceList(false), 200)}
                   />
                   
                 {showServiceList && (
                     <ul className="suggestions-list service-list">
                         {filteredServices.length > 0 ? filteredServices.map(s => (
-                            // CHANGE: Use onMouseDown instead of onClick
                             <li key={s.id} onMouseDown={() => selectService(s)}>
                                 <div className="service-row">
                                     <span className="service-name">{s.name}</span>
@@ -323,6 +415,17 @@ const ReceptionistDashboard = () => {
                         )}
                     </ul>
                 )}
+              </div>
+
+              <div className="form-group">
+                 <label>Total Cost (Auto-calculated) :</label>
+                 <input 
+                    type="number" 
+                    className="form-control" 
+                    value={formData.cost} 
+                    readOnly 
+                    style={{backgroundColor: '#e9ecef', fontWeight: 'bold'}}
+                 />
               </div>
 
               <div className="form-group">
@@ -344,9 +447,34 @@ const ReceptionistDashboard = () => {
                 </select>
               </div>
 
+              {/* --- DATE & TIME SPLIT INPUTS --- */}
               <div className="form-group">
-                 <label>End Date & Time :</label>
-                 <input type="datetime-local" className="form-control" name="date_end" value={formData.date_end} onChange={e => setFormData({...formData, date_end: e.target.value})} required/>
+                  <label>End Date & Time :</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* DATE INPUT */}
+                    <input 
+                      type="date" 
+                      className="form-control" 
+                      value={getDatePart()} 
+                      onChange={handleDatePartChange} 
+                      required
+                    />
+                    
+                    {/* TIME INPUT (With Min/Max Limits) */}
+                    <input 
+                      type="time" 
+                      className="form-control" 
+                      value={getTimePart()} 
+                      onChange={handleTimePartChange}
+                      min="08:00"
+                      max="20:30"
+                      required
+                      disabled={!getDatePart()} // Disable time until date is picked
+                    />
+                  </div>
+                  <small style={{color: '#666', fontSize: '0.8rem', marginTop: '4px', display:'block'}}>
+                    Working hours: 08:00 AM to 08:30 PM
+                  </small>
               </div>
 
               <div className="modal-actions">

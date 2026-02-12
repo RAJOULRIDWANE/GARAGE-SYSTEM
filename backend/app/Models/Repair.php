@@ -4,17 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Part;
 
 class Repair extends Model
 {
     use HasFactory;
 
-    // 1. ADD 'service_id' TO THIS LIST
     protected $fillable = [
         'vehicle_id',
         'mechanic_id',
-        'service_id', // <--- IMPORTANT: Allows saving the ID
-        'service_id',     // <--- Added
+        // 'service_id', <--- REMOVED (Now in pivot table)
         'description',
         'mechanic_notes',
         'cost',
@@ -24,6 +23,8 @@ class Repair extends Model
         'invoice_number'
     ];
 
+    // --- RELATIONSHIPS ---
+
     public function vehicle() {
         return $this->belongsTo(Vehicle::class);
     }
@@ -32,8 +33,18 @@ class Repair extends Model
         return $this->belongsTo(User::class, 'mechanic_id');
     }
 
-    // 2. ADD THIS FUNCTION
-    public function service() {
-        return $this->belongsTo(Service::class);
+    // --- UPDATED: Has Many Services ---
+    // ... inside Repair class
+    public function services() {
+        // Ensure this table name 'repair_service' matches your database
+        return $this->belongsToMany(Service::class, 'repair_service')
+                    ->withTimestamps();
+    }
+
+    public function parts()
+    {
+        return $this->belongsToMany(Part::class, 'part_repair', 'repair_id', 'part_id')
+                    ->withPivot('quantity', 'price')
+                    ->withTimestamps();
     }
 }

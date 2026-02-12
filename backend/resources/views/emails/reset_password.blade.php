@@ -14,7 +14,7 @@
                     
                     <tr>
                         <td style="padding: 40px 40px 10px 40px;">
-                            <h1 style="color: #2563eb; font-size: 24px; font-weight: 700; margin: 0;">Garage</h1>
+                            <h1 style="color: #2563eb; font-size: 24px; font-weight: 700; margin: 0;"> MecaPro Garage </h1>
                         </td>
                     </tr>
                     
@@ -23,7 +23,7 @@
                             <p style="margin-bottom: 20px;">Hello,</p>
                             
                             <p style="margin-bottom: 20px;">
-                                We've received a request to reset the password for the Garage PFE account associated with your email address. No changes have been made to your account yet.
+                                We've received a request to reset the password for the <span style="color: black; font-weight: bold;"> MecaPro </span> account associated with your email address. No changes have been made to your account yet.
                             </p>
                             
                             <p style="margin-bottom: 24px;">
@@ -49,7 +49,7 @@
                             </p>
 
                             <p style="margin-top: 30px; margin-bottom: 0; color: #6b7280;">
-                                — Garage PFE team
+                                — MecaPro Garage Team
                             </p>
                         </td>
                     </tr>
@@ -58,7 +58,7 @@
                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px;">
                     <tr>
                         <td align="center" style="padding-top: 20px; color: #9ca3af; font-size: 12px;">
-                            &copy; {{ date('Y') }} Garage PFE. All rights reserved.
+                            &copy; {{ date('Y') }} MecaPro. All rights reserved.
                         </td>
                     </tr>
                 </table>

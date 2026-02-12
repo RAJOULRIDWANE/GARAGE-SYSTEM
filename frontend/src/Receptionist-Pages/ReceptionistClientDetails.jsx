@@ -9,7 +9,7 @@ const ReceptionistClientDetails = () => {
   const { id, name } = useParams(); 
   const navigate = useNavigate();
 
-  // Clean up the name from URL
+  // --- 1. STATE MANAGEMENT ---
   const clientNameDisplay = name ? decodeURIComponent(name).replace(/-/g, ' ') : 'Client';
 
   const [user, setUser] = useState({ 
@@ -19,26 +19,58 @@ const ReceptionistClientDetails = () => {
 
   const [client, setClient] = useState(null);
   const [repairs, setRepairs] = useState([]);
-  
-  // Search State
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Loading states
+  const [loading, setLoading] = useState(true); 
+  const [downloadingId, setDownloadingId] = useState(null); 
 
+  // --- 2. EFFECT: FETCH DATA ---
   useEffect(() => {
     if(id) fetchClientDetails();
   }, [id]);
 
   const fetchClientDetails = async () => {
+    setLoading(true); 
     try {
         const token = localStorage.getItem('ACCESS_TOKEN');
         const res = await axios.get(`http://127.0.0.1:8000/api/receptionist/client/${id}/repairs`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         
-
         setClient(res.data.client);
         setRepairs(res.data.repairs);
     } catch (err) {
         console.error("Error fetching details:", err);
+    } finally {
+        setLoading(false); 
+    }
+  };
+
+  // --- 3. HANDLE STATUS UPDATE (DELIVERED) ---
+  const handleUpdateStatus = async (jobId, newStatus) => {
+    if(!window.confirm(`Are you sure you want to mark this vehicle as ${newStatus}?`)) return;
+
+    try {
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        
+        // Ensure we send the status in the format the backend likely expects (Title Case)
+        await axios.put(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/status`, 
+            { status: newStatus }, // Sending "Delivered"
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Update Local State Immediately
+        setRepairs(prevRepairs => 
+            prevRepairs.map(job => 
+                job.id === jobId ? { ...job, status: newStatus } : job
+            )
+        );
+
+    } catch (error) {
+        console.error("Status update failed", error);
+        // Show the exact error from the backend if available
+        alert("Failed to update status. " + (error.response?.data?.message || error.response?.data?.error || "Check if repair is fully Completed."));
     }
   };
 
@@ -53,116 +85,254 @@ const ReceptionistClientDetails = () => {
       navigate('/login');
   };
 
-  // --- KPI Calculation Logic ---
+  // ==========================================
+  //      PDF GENERATOR LOGIC (FIXED)
+  // ==========================================
+  const generatePDF = async (job) => {
+    const doc = new jsPDF();
+    
+    // A. HELPER: Load Image
+    const getBase64ImageFromUrl = (url) => {
+        return new Promise((resolve, reject) => {
+            var img = new Image();
+            img.setAttribute("crossOrigin", "anonymous");
+            img.onload = () => {
+                var canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                var dataURL = canvas.toDataURL("image/png");
+                resolve(dataURL);
+            };
+            img.onerror = error => reject(error);
+            img.src = url;
+        });
+    };
+
+    // B. LOAD LOGO
+    let logoData = null;
+    try {
+        logoData = await getBase64ImageFromUrl("/images/MECHANIC.png");
+    } catch (error) {
+        console.warn("Logo not found");
+    }
+
+    // C. STYLES
+    const brandColor = [0, 180, 216]; 
+    const lightGray = [245, 247, 250]; 
+    const darkText = [51, 51, 51];
+    const grayText = [128, 128, 128];
+
+    // D. HEADER
+    doc.setFillColor(...brandColor);
+    doc.rect(0, 0, 210, 40, 'F'); 
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(26);
+    doc.text("MECAPRO", 20, 28);
+    
+    if (logoData) doc.addImage(logoData, 'PNG', 160, 5, 30, 30); 
+
+    // E. INFO
+    doc.setTextColor(...darkText);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("ESTN Selouane", 20, 55);
+    doc.text("Nador, Morocco", 20, 60);
+    doc.text("mecapro.info@gmail.com", 20, 65);
+
+    // F. INVOICE META
+    const invoiceNum = job.invoice_number || `INV-${job.id}`;
+    const dateIn = job.created_at ? new Date(job.created_at).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
+    const dateDue = job.date_end ? new Date(job.date_end).toLocaleDateString('en-GB') : "TBD";
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("INVOICE", 140, 55);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...grayText);
+    doc.text(`No: ${invoiceNum}`, 140, 62);
+    doc.text(`Date In: ${dateIn}`, 140, 67);
+    doc.text(`Due Date: ${dateDue}`, 140, 72);
+    
+    // G. BILL TO
+    doc.setDrawColor(200);
+    doc.line(20, 80, 190, 80); 
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...brandColor);
+    doc.text("BILL TO:", 20, 90);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0);
+    doc.text(job.vehicle?.client?.name || "Guest Client", 20, 97);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...grayText);
+    const carInfo = `${job.vehicle?.make || ''} ${job.vehicle?.model || ''} - ${job.vehicle?.plate_number || job.vehicle?.plate || ''}`;
+    doc.text(carInfo, 20, 103);
+
+    // H. TABLE HEADER
+    let y = 120;
+    doc.setFillColor(...brandColor); 
+    doc.rect(20, y - 6, 170, 10, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("DESCRIPTION", 25, y);
+    doc.text("QTY", 110, y);
+    doc.text("PRICE", 140, y);
+    doc.text("TOTAL", 185, y, { align: "right" }); 
+
+    // I. TABLE ROWS & LOGIC FIX
+    y += 12;
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+
+    let grandTotal = 0;
+    let rowIndex = 0;
+    
+    const addRow = (description, qty, price) => {
+        const lineTotal = qty * price;
+        grandTotal += lineTotal;
+        if (rowIndex % 2 === 0) { 
+            doc.setFillColor(...lightGray);
+            doc.rect(20, y - 5, 170, 8, 'F');
+        }
+        doc.text(description, 25, y);
+        doc.text(qty.toString(), 110, y);
+        doc.text(price.toFixed(2), 140, y);
+        doc.text(lineTotal.toFixed(2), 185, y, { align: "right" });
+        y += 10;
+        rowIndex++;
+        if (y > 270) { doc.addPage(); y = 20; rowIndex = 0; }
+    };
+
+    // --- FIX STARTS HERE ---
+    // We check if we have detailed services. 
+    // If YES: We only sum the services. We DO NOT add job.cost (which is likely the cached total).
+    // If NO: We use job.cost as a fallback "Lump Sum" (Legacy Data).
+    
+    const hasServices = job.services && Array.isArray(job.services) && job.services.length > 0;
+    const hasParts = job.parts && Array.isArray(job.parts) && job.parts.length > 0;
+
+    if (hasServices || hasParts) {
+        // 1. Add Services
+        if (hasServices) {
+            job.services.forEach(service => {
+                const price = Number(service.price || 0);
+                const qty = Number(service.quantity || 1); 
+                // Note: If service.quantity doesn't exist in your DB, default to 1
+                if (price > 0) addRow(service.name, qty, price);
+            });
+        }
+        // 2. Add Parts
+        if (hasParts) {
+            job.parts.forEach(part => {
+                const qty = Number(part.pivot?.quantity || 1);
+                const price = Number(part.pivot?.price || 0);
+                if (price > 0) addRow(`Part: ${part.name}`, qty, price);
+            });
+        }
+    } else {
+        // Fallback: No details found, use the Main Total Cost
+        const labor = Number(job.cost || 0);
+        if (labor > 0) {
+            addRow(job.service?.name || "Repair Service (Total)", 1, labor);
+        }
+    }
+    // --- FIX ENDS HERE ---
+
+    // J. TOTALS
+    y += 5;
+    doc.setDrawColor(0);
+    doc.setLineWidth(1);
+    doc.line(100, y, 190, y);
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...darkText);
+    doc.text("GRAND TOTAL", 100, y);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(...brandColor);
+    doc.text(`${grandTotal.toFixed(2)} MAD`, 185, y, { align: "right" });
+
+    // K. FOOTER
+    y = doc.internal.pageSize.height - 20;
+    doc.setFontSize(9);
+    doc.setTextColor(...grayText);
+    doc.setFont("helvetica", "italic");
+    doc.text("Thank you for choosing MecaPro!", 105, y, { align: "center" });
+
+    doc.save(`Invoice_${invoiceNum}.pdf`);
+  };
+
+  // --- 4. DOWNLOAD HANDLER ---
+  const handleDownloadInvoice = async (jobId) => {
+    if (downloadingId === jobId) return;
+    setDownloadingId(jobId); 
+
+    try {
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        const response = await axios.get(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/invoice`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const fullRepairData = response.data;
+        await generatePDF(fullRepairData);
+    } catch (error) {
+        console.error("Could not fetch invoice data:", error);
+        alert("Error generating invoice.");
+    } finally {
+        setDownloadingId(null); 
+    }
+  };
+
+  // --- 5. KPI & HELPERS ---
   const totalSpent = repairs.reduce((sum, job) => sum + Number(job.cost || 0), 0);
   const totalVisits = repairs.length;
-
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0]; 
 
-  const todaysAppointments = repairs.filter(r => 
-      r.date_end && r.date_end.startsWith(todayStr)
-  ).length;
+  const todaysAppointments = repairs.filter(r => r.date_end && r.date_end.startsWith(todayStr)).length;
 
-  const confirmedToday = repairs.filter(r => {
+  const completedToday = repairs.filter(r => {
       if (!r.date_end || !r.status) return false;
       const isToday = r.date_end.startsWith(todayStr);
-      const status = r.status.toLowerCase().trim();
-      return isToday && status === 'completed';
+      return isToday && r.status.toLowerCase().trim() === 'completed';
   }).length;
 
-  // --- Search Filter Logic ---
+  const deliveredCount = repairs.filter(r => r.status && r.status.toLowerCase().trim() === 'delivered').length;
+
   const filteredRepairs = repairs.filter(job => {
       if (!searchTerm) return true;
-      // Check both plate and plate_number just in case
-      const plate = job.vehicle?.plate_number || job.vehicle?.plate || '';
-      return plate.toLowerCase().includes(searchTerm.toLowerCase());
+      const term = searchTerm.toLowerCase();
+      const plate = job.vehicle?.plate_number || job.vehicle?.plate || job.vehicle?.license_plate || '';
+      const mechanic = job.mechanic?.name || '';
+      const servicesStr = job.services ? job.services.map(s => s.name).join(' ') : (job.service?.name || '');
+      return plate.toLowerCase().includes(term) || mechanic.toLowerCase().includes(term) || servicesStr.toLowerCase().includes(term);
   });
 
-  // --- Invoice Logic ---
-  const handleDownloadInvoice = (invoice, clientName, vehicleInfo, jobCost) => {
-    const finalAmount = invoice?.amount || jobCost || "0.00";
-    let invNumber = invoice?.invoice_number || "INV-DRAFT";
-    let invDate = invoice?.created_at ? new Date(invoice.created_at) : new Date();
-    let invStatus = invoice?.status || "Pending";
-
-    const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.setTextColor(40);
-    doc.text("GARAGE SERVICE INVOICE", 105, 20, null, null, "center");
-    doc.setLineWidth(0.5);
-    doc.line(20, 25, 190, 25);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Invoice No:", 20, 40);
-    doc.text("Date:", 20, 50);
-    doc.text("Status:", 20, 60);
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(invNumber, 50, 40);
-    doc.text(invDate.toLocaleDateString(), 50, 50);
-    
-    const statusColor = (invStatus === 'paid') ? [0, 128, 0] : [200, 0, 0];
-    doc.setTextColor(...statusColor);
-    doc.text(invStatus.toUpperCase(), 50, 60);
-
-    doc.setTextColor(100); 
-    doc.setFontSize(10);
-    doc.text("BILL TO:", 120, 40);
-    doc.setTextColor(0); 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(clientName || "Guest Client", 120, 48);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(vehicleInfo || "Unknown Vehicle", 120, 55);
-
-    doc.setFillColor(240, 240, 240);
-    doc.rect(20, 75, 170, 10, "F");
-    doc.setFont("helvetica", "bold");
-    doc.text("DESCRIPTION", 25, 81);
-    doc.text("AMOUNT", 160, 81);
-
-    doc.setFont("helvetica", "normal");
-    doc.text("Repair Service", 25, 95);
-    doc.text(`${finalAmount} MAD`, 160, 95);
-    doc.line(20, 110, 190, 110);
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("TOTAL DUE:", 110, 125);
-    doc.text(`${finalAmount} MAD`, 160, 125);
-
-    doc.save(`Invoice_${invNumber}.pdf`);
-  };
-
-  // --- HELPER: Slugify Status for CSS ---
   const getBadgeClass = (status) => {
       if (!status) return 'pending';
       const s = status.toLowerCase().trim();
       if (s === 'progress' || s === 'in progress') return 'in-progress'; 
       if (s === 'completed') return 'completed';
+      if (s === 'delivered') return 'delivered';
       if (s === 'cancelled') return 'cancelled';
       return 'pending'; 
   };
 
-  // --- HELPER: Format Display Text ---
-  const formatStatusLabel = (status) => {
-      if (!status) return 'Pending';
-      const s = status.toLowerCase().trim();
-      if (s === 'progress' || s === 'in-progress' || s === 'in progress') return 'In Progress';
-      return status; 
-  };
-
+  // --- 6. RENDER ---
   return (
     <div className="receptionist-container">
       <DashboardNavbar user={user} onLogout={handleLogout} />
 
       <div className="header-actions">
         <div>
-            <Link to="/receptionist/dashboard" className="dashboard-back">
+            <Link to="/receptionist/dashboard" className="back-link-container back-link">
                 ← Back to Dashboard
             </Link>
             <h1>{clientNameDisplay}'s Repair History</h1>
@@ -172,52 +342,35 @@ const ReceptionistClientDetails = () => {
       {/* KPI SECTION */}
       <div className="kpi-container">
         <div className="kpi-card">
-            <div className="kpi-icon">
-              <i className="fa-regular fa-calendar"></i>
-            </div>
-            <div className="kpi-info">
-                <h3>Today's Appt</h3>
-                <p className="kpi-number">{todaysAppointments}</p>
-            </div>
+            <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
+            <div className="kpi-info"><h3>Today's Appt</h3><p className="kpi-number">{todaysAppointments}</p></div>
         </div>
         <div className="kpi-card">
-            <div className="kpi-icon success-icon">
-              <i className="fa-regular fa-circle-check"></i>
-            </div>
-            <div className="kpi-info">
-                <h3>Confirmed Today</h3>
-                <p className="kpi-number">{confirmedToday}</p>
-            </div>
+            <div className="kpi-icon delivered-icon"><i className="fa-solid fa-handshake"></i></div>
+            <div className="kpi-info"><h3>Delivered</h3><p className="kpi-number">{deliveredCount}</p></div>
         </div>
         <div className="kpi-card">
-            <div className="kpi-icon">
-              <i className="fa-solid fa-wrench"></i>
-            </div>
-            <div className="kpi-info">
-                <h3>Total Visits</h3>
-                <p className="kpi-number">{totalVisits}</p>
-            </div>
+            <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
+            <div className="kpi-info"><h3>Completed Today</h3><p className="kpi-number">{completedToday}</p></div>
         </div>
         <div className="kpi-card">
-            <div className="kpi-icon success-icon">
-              <i class="fa-solid fa-wallet"></i>
-            </div>
-            <div className="kpi-info">
-                <h3>Total Spent</h3>
-                <p className="kpi-number">{totalSpent} MAD</p>
-            </div>
+            <div className="kpi-icon"><i className="fa-solid fa-wrench"></i></div>
+            <div className="kpi-info"><h3>Total Visits</h3><p className="kpi-number">{totalVisits}</p></div>
+        </div>
+        <div className="kpi-card">
+            <div className="kpi-icon success-icon"><i className="fa-solid fa-wallet"></i></div>
+            <div className="kpi-info"><h3>Total Spent</h3><p className="kpi-number">{totalSpent} MAD</p></div>
         </div>
       </div>
 
-      {/* SEARCH BAR */}
       <div className="search-filter-bar">
-        <input 
-            type="text" 
-            placeholder="Search by License Plate (e.g. 1234-A-50)..." 
-            className="dashboard-search-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-        />
+          <input 
+              type="text" 
+              placeholder="Search by License Plate, Mechanic, or Service..." 
+              className="dashboard-search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+          />
       </div>
 
       <div className="table-card">
@@ -236,97 +389,65 @@ const ReceptionistClientDetails = () => {
                 </tr>
             </thead>
             <tbody>
-                {filteredRepairs.length > 0 ? filteredRepairs.map(job => (
+                {loading ? (
+                    <tr><td colSpan="9" style={{textAlign:'center', padding:'40px'}}>
+                        <i className="fa-solid fa-spinner fa-spin" style={{fontSize:'24px', color:'#005DFFFF'}}></i>
+                        <p style={{marginTop:'10px', color:'#666'}}>Loading client history...</p>
+                    </td></tr>
+                ) : filteredRepairs.length > 0 ? (
+                    filteredRepairs.map(job => (
                     <tr key={job.id}>
-                        {/* 1. Vehicle Info (Checks plate OR plate_number) */}
                         <td>
-                            <strong>{job.vehicle?.make || 'Unknown'} {job.vehicle?.model || ''}</strong>
-                            <div className="sub-text">
-                                {/* Try all common names */}
-                                {job.vehicle?.plate || 
-                                job.vehicle?.plate_number || 
-                                job.vehicle?.license_plate || 
-                                job.vehicle?.matricule || 
-                                job.vehicle?.registration_number || 
-                                'No Plate'}
+                            <strong>{job.vehicle?.make} {job.vehicle?.model}</strong>
+                            <div className="sub-text">{job.vehicle?.plate_number || job.vehicle?.plate}</div>
+                        </td>
+                        <td><span style={{textTransform: 'capitalize'}}>{job.vehicle?.type}</span></td>
+                        
+                        {/* UPDATED SERVICE COLUMN WITH BADGES */}
+                        <td>
+                            <div className="service-badges-container">
+                                {job.services && job.services.length > 0 ? (
+                                    job.services.map((service, idx) => (
+                                        <span key={idx} className="service-badge">
+                                            {service.name}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <span className="service-badge">
+                                        {job.service?.name || 'General Service'}
+                                    </span>
+                                )}
                             </div>
                         </td>
                         
-                        {/* 2. Vehicle Type */}
-                        <td>
-                             <span style={{textTransform: 'capitalize', fontWeight: '500', color:'#475569'}}>
-                                {job.vehicle?.type || 'Standard'}
-                             </span>
-                        </td>
-                        
-                        {/* 3. Service Name & Desc */}
-                        <td>
-                            <strong>{job.service?.name || 'Custom Service'}</strong>
-                            <div className="sub-text">
-                                {job.description || 'No description'}
-                            </div>
-                        </td>
-                        
-                        {/* 4. Mechanic Name */}
-                        <td>
-                             {job.mechanic ? (
-                                <span className="mechanic-name">
-                                   {job.mechanic.name}
-                                </span>
-                             ) : <span className="unassigned">Unassigned</span>}
-                        </td>
-                        
-                        {/* Cost */}
+                        <td>{job.mechanic ? <span className="mechanic-name">{job.mechanic.name}</span> : <span className="unassigned">Unassigned</span>}</td>
                         <td style={{fontWeight:'bold'}}>{job.cost} MAD</td>
-                        
-                        {/* 5. Start Date (Checks date_start OR created_at) */}
+                        <td>{new Date(job.created_at).toLocaleDateString('en-GB')}</td>
+                        <td>{job.date_end ? new Date(job.date_end).toLocaleString('en-GB') : 'TBD'}</td>
+                        <td><span className={`status-badge ${getBadgeClass(job.status)}`}>{job.status}</span></td>
                         <td>
-                             {new Date(job.date_start || job.created_at).toLocaleString('en-GB', {
-                                day: '2-digit', month: '2-digit', year: 'numeric'
-                             })}
-                        </td>
-
-                        {/* Predicted End Date */}
-                        <td>
-                             {job.date_end ? new Date(job.date_end).toLocaleString('en-GB', {
-                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-                             }) : <span className="sub-text">TBD</span>}
-                        </td>
-                        
-                        {/* Status */}
-                        <td>
-                            <span className={`status-badge ${getBadgeClass(job.status)}`}>
-                                {formatStatusLabel(job.status)}
-                            </span>
-                        </td>
-
-                        {/* Actions */}
-                        <td>
-                            <button 
-                                className="action-btn" 
-                                style={{
-                                    marginRight:'8px', 
-                                    backgroundColor: '#dbeafe', 
-                                    color:'#1e40af',
-                                }}
-                                title="Open Live Monitor"
-                                onClick={() => navigate(`/track-repair/${job.id}`)}
-                            >
+                            <button className="action-btn" onClick={() => navigate(`/track-repair/${job.id}`)}>
                                 <i className="fa-solid fa-eye"></i>
                             </button>
-
-                            <button className="action-btn invoice-btn" onClick={() => handleDownloadInvoice(
-                                job.invoice, 
-                                clientNameDisplay, 
-                                `${job.vehicle?.make} ${job.vehicle?.model}`, 
-                                job.cost
-                            )}>
-                                <i className="fa-solid fa-file-arrow-down"></i>
+                            
+                            <button className="action-btn invoice-btn" disabled={downloadingId === job.id} onClick={() => handleDownloadInvoice(job.id)}>
+                                {downloadingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-file-arrow-down"></i>}
                             </button>
+
+                            {job.status && job.status.toLowerCase().trim() === 'completed' && (
+                                <button 
+                                    className="action-btn deliver-btn"
+                                    title="Mark as Delivered"
+                                    onClick={() => handleUpdateStatus(job.id, 'Delivered')}
+                                >
+                                    <i className="fa-solid fa-car-side"></i>
+                                </button>
+                            )}
                         </td>
                     </tr>
-                )) : (
-                    <tr><td colSpan="9" style={{textAlign:'center', padding:'20px'}}>No records found matching "{searchTerm}".</td></tr>
+                ))
+                ) : (
+                    <tr><td colSpan="9" style={{textAlign:'center', padding:'20px'}}>No Repairs found.</td></tr>
                 )}
             </tbody>
         </table>

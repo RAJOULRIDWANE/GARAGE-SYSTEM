@@ -69,12 +69,13 @@
   color: #2563eb;
 }
 
-.status-section h2,
+
 .services-section h2,
 .why-section h2 {
   margin: 0 0 0.5rem;
   text-align: center;
   font-size: 1.7rem;
+  justify-content: center;
 }
 
 .section-subtitle {

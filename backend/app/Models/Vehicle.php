@@ -10,21 +10,22 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',         // This is the Client ID
+        'user_id',
+        'license_plate', // or 'plate' or 'plate_number' - make sure this matches your DB
         'make',
         'model',
-        'license_plate',
         'year',
-        'type'
+        'type',
     ];
 
-    // A vehicle belongs to a client (User)
+    // --- CRITICAL FIX START ---
     public function client()
     {
+        // This allows $vehicle->client to work
         return $this->belongsTo(User::class, 'user_id');
     }
+    // --- CRITICAL FIX END ---
 
-    // A vehicle can have many repair history logs
     public function repairs()
     {
         return $this->hasMany(Repair::class);

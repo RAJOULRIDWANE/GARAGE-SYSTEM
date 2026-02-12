@@ -52,13 +52,6 @@ body {
     margin-bottom: 4px;
 }
 
-.user-name {
-    margin: 0;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: #2563eb;
-}
 
 .user-profile-wrapper {
     position: relative;

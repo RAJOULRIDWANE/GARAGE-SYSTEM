@@ -1,1066 +1,865 @@
-/* ========================================
-   COMPLETE REPAIRDETAILS.CSS - MODERN DESIGN
-   ======================================== */
+/* =========================================
+   SCOPED VARIABLES & CONTAINER
+   ========================================= */
 
-/* Import distinctive fonts from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-/* Container */
 .repair-details-container {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-    min-height: 100vh;
-    padding: 0;
-}
-
-/* Header */
-.repair-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    padding: 30px 40px;
-    box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.repair-header h1 {
-    color: #ffffff;
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.5px;
-    flex: 1;
-}
-
-.btn-return {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-}
-
-.btn-return:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateX(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.btn-return i {
-    font-size: 1rem;
-}
-
-/* Loading & Error States */
-.loading-state,
-.error-state {
-    text-align: center;
-    padding: 60px 20px;
-    font-size: 1.1rem;
-    color: #64748b;
-}
-
-.error-state h2 {
-    color: #ef4444;
-    margin-bottom: 10px;
-}
-
-/* Main Content */
-.repair-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 30px;
-}
-
-/* Sections */
-section {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 35px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04),
-                0 8px 24px rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    transition: all 0.3s ease;
-}
-
-section:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06),
-                0 12px 32px rgba(0, 0, 0, 0.04);
-}
-
-section h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 25px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-section h2 i {
-    color: #3b82f6;
-    font-size: 1.3rem;
-}
-
-/* Vehicle Info Section */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.info-item.full-width {
-    grid-column: 1 / -1;
-}
-
-.info-item label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-item input,
-.info-item textarea {
-    padding: 14px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-family: 'Outfit', sans-serif;
-    background: #f8fafc;
-    color: #334155;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.info-item input:read-only,
-.info-item textarea:read-only {
-    cursor: not-allowed;
-}
-
-.info-item input:focus,
-.info-item textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background: #ffffff;
-}
-
-.info-item textarea {
-    resize: vertical;
-    font-family: 'Outfit', sans-serif;
-}
-
-/* Services Section */
-.services-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.zone-filter {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: #f1f5f9;
-    padding: 6px;
-    border-radius: 14px;
-}
-
-.zone-filter button {
-    padding: 10px 20px;
-    border: none;
-    background: transparent;
-    color: #64748b;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 10px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Outfit', sans-serif;
-    text-transform: capitalize;
-}
-
-.zone-filter button:hover {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.zone-filter button.active {
-    background: #3b82f6;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-/* Services Grid */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 18px;
-}
-
-.service-card {
-    background: #ffffff;
-    border: 2px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.service-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.service-card:hover::before {
-    transform: scaleX(1);
-}
-
-.service-card:hover {
-    border-color: #3b82f6;
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
-}
-
-.service-card.selected {
-    border-color: #3b82f6;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
-}
-
-.service-card.selected::before {
-    transform: scaleX(1);
-}
-
-.service-icon-circle {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-}
-
-.service-icon-circle i {
-    font-size: 1.3rem;
-    color: #3b82f6;
-    transition: all 0.3s ease;
-}
-
-.service-card:hover .service-icon-circle {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    transform: scale(1.1);
-}
-
-.service-card:hover .service-icon-circle i {
-    color: #ffffff;
-}
-
-.service-card.selected .service-icon-circle {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.service-card.selected .service-icon-circle i {
-    color: #ffffff;
-}
-
-.service-info h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 8px 0;
-}
-
-.service-zone {
-    display: inline-block;
-    padding: 4px 12px;
-    background: #f1f5f9;
-    color: #64748b;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 6px;
-    text-transform: capitalize;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.service-price {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: #3b82f6;
-    margin-top: 12px;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.service-quantity {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 15px;
-    padding: 8px;
-    background: #ffffff;
-    border-radius: 12px;
-    border: 2px solid #e2e8f0;
-}
-
-.service-quantity button {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: #3b82f6;
-    color: #ffffff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.service-quantity button:hover {
-    background: #2563eb;
-    transform: scale(1.1);
-}
-
-.service-quantity span {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1e293b;
-    min-width: 30px;
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    flex: 1;
-}
-
-.selected-checkmark {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 28px;
-    height: 28px;
-    background: #3b82f6;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: checkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.selected-checkmark i {
-    color: #ffffff;
-    font-size: 0.85rem;
-}
-
-@keyframes checkPop {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-/* Parts Section */
-.parts-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.btn-add-part {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border: none;
-    color: #ffffff;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-add-part:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-}
-
-.parts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.part-item {
-    display: grid;
-    grid-template-columns: 2fr 1fr auto;
-    gap: 15px;
-    align-items: center;
-    padding: 15px;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    transition: all 0.2s ease;
-}
-
-.part-item:hover {
-    border-color: #cbd5e1;
-    background: #ffffff;
-}
-
-.part-item input {
-    padding: 12px 14px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 500;
-    background: #ffffff;
-    transition: border-color 0.2s ease;
-}
-
-.part-item input:focus {
-    outline: none;
-    border-color: #3b82f6;
-}
-
-.btn-remove-part {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: #fee2e2;
-    color: #dc2626;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-remove-part:hover {
-    background: #fecaca;
-    transform: scale(1.1);
-}
-
-.no-parts-message {
-    text-align: center;
-    padding: 60px 20px;
-    color: #9ca3af;
-}
-
-.no-parts-message i {
-    font-size: 60px;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.no-parts-message p {
-    font-size: 16px;
-    color: #6b7280;
-}
-
-/* Summary Section */
-.summary-section {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border: 2px solid #cbd5e1;
-}
-
-.summary-section h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 20px 0;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #cbd5e1;
-    font-size: 1rem;
-    color: #475569;
-}
-
-.summary-row:last-child {
-    border-bottom: none;
-}
-
-.summary-row.total {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-top: 10px;
-    padding-top: 20px;
-    border-top: 3px solid #3b82f6;
-    border-bottom: none;
-}
-
-.summary-row.total span:last-child {
-    color: #3b82f6;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-/* Action Buttons */
-.action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 30px;
-    padding: 20px 0;
-}
-
-.btn-submit {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border: none;
-    color: #ffffff;
-    padding: 18px 48px;
-    border-radius: 14px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
-    font-family: 'Outfit', sans-serif;
-}
-
-.btn-submit:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
-}
-
-.btn-submit i {
-    font-size: 1.2rem;
-}
-
-.btn-submit:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
-}
-
-.btn-submit:disabled:hover {
-    transform: none;
-}
-
-/* ========================================
-   CONFIRMATION SCREEN STYLES
-   ======================================== */
-
-.confirmation-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-.confirmation-success {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.success-icon {
-    font-size: 80px;
-    color: #10b981;
-    margin-bottom: 20px;
-    animation: scaleIn 0.5s ease-out;
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.confirmation-success h2 {
-    color: #1f2937;
-    margin-bottom: 10px;
-    font-size: 28px;
-    font-weight: 700;
-}
-
-.confirmation-success > p {
-    color: #6b7280;
-    margin-bottom: 30px;
-    font-size: 16px;
-}
-
-.request-summary {
-    background: #f9fafb;
-    border-radius: 12px;
-    padding: 25px;
-    margin: 30px 0;
-    text-align: left;
-}
-
-.request-summary h3 {
-    color: #1f2937;
-    margin-bottom: 20px;
-    font-size: 20px;
-    font-weight: 700;
-    text-align: center;
-}
-
-.request-summary h4 {
-    color: #374151;
-    margin: 20px 0 10px 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.summary-info {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #e5e7eb;
-}
-
-.summary-info p {
-    margin: 8px 0;
-    color: #4b5563;
-    font-size: 15px;
-}
-
-.summary-info strong {
-    color: #1f2937;
-    font-weight: 600;
-}
-
-.services-summary ul,
-.parts-summary ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.services-summary li,
-.parts-summary li {
-    padding: 10px 15px;
-    background: white;
-    margin: 8px 0;
-    border-radius: 6px;
-    border-left: 3px solid #3b82f6;
-    color: #4b5563;
-    font-size: 15px;
-}
-
-.parts-summary li {
-    border-left-color: #10b981;
-}
-
-.confirmation-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 30px;
-    flex-wrap: wrap;
-}
-
-.btn-dashboard,
-.btn-new-request {
-    padding: 14px 28px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-family: 'Outfit', sans-serif;
-}
-
-.btn-dashboard {
-    background: #3b82f6;
-    color: white;
-}
-
-.btn-dashboard:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-new-request {
-    background: #10b981;
-    color: white;
-}
-
-.btn-new-request:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-/* ============================================
-   INVOICE STYLING
-   ============================================ */
-
-.invoice-container {
-    max-width: 900px;
-    margin: 40px auto;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 50px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
+  --primary-color: #3b82f6; /* Modern Blue */
+  --secondary-color: #64748b; /* Slate Grey */
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --success-color: #22c55e;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition-base: 0.2s ease;
+
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: var(--text-dark);
+  position: relative;
+  line-height: 1.6;
+}
+
+.repair-details-container .loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-light);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  animation: repairFadeIn 0.5s ease-in;
+}
+
+.repair-details-container .section-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.repair-details-container .spinner-mini {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: repairSpin 0.8s linear infinite;
+}
+
+.repair-details-container .repair-content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =========================================
+   SECTIONS & HEADINGS
+   ========================================= */
+
+.repair-details-container .vehicle-info-section, 
+.repair-details-container .services-section, 
+.repair-details-container .summary-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+.repair-details-container h2 i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.repair-details-container h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+/* =========================================
+   INFO GRID & INPUTS
+   ========================================= */
 
-.invoice-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 40px;
-    padding-bottom: 30px;
-    border-bottom: 3px solid #3b82f6;
+.repair-details-container .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
 }
 
-.invoice-logo h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin: 0 0 8px 0;
-    letter-spacing: -1px;
+.repair-details-container .info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.invoice-logo p {
-    font-size: 0.95rem;
-    color: #64748b;
-    margin: 0;
-    font-family: 'JetBrains Mono', monospace;
+.repair-details-container .info-item.full-width {
+  grid-column: 1 / -1;
 }
 
-.invoice-date p {
-    font-size: 0.95rem;
-    color: #64748b;
-    margin: 0;
+.repair-details-container .info-item label {
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.invoice-parties {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
-}
-
-.invoice-from h3,
-.invoice-to h3 {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #3b82f6;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 0 0 12px 0;
-}
-
-.invoice-from p,
-.invoice-to p {
-    margin: 6px 0;
-    color: #475569;
-    font-size: 0.95rem;
-}
-
-/* Invoice Table */
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-}
-
-.invoice-table thead {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    color: #ffffff;
-}
-
-.invoice-table th {
-    padding: 16px;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.invoice-table th:last-child,
-.invoice-table td:last-child {
-    text-align: right;
-}
+.repair-details-container .info-item input, 
+.repair-details-container .info-item textarea {
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: #f8fafc;
+  font-size: 1rem;
+  color: var(--text-dark);
+  resize: none;
+  transition: all var(--transition-base);
+  font-family: inherit;
+}
 
-.invoice-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.invoice-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-.invoice-table td {
-    padding: 16px;
-    color: #334155;
-    font-size: 0.95rem;
-}
-
-.invoice-table tfoot tr {
-    border-top: 2px solid #cbd5e1;
-}
-
-.invoice-table tfoot td {
-    padding: 12px 16px;
-    font-weight: 600;
-    color: #1e293b;
-}
+.repair-details-container .info-item input:focus,
+.repair-details-container .info-item textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.repair-details-container .info-item textarea {
+  min-height: 100px;
+}
 
-.invoice-table tfoot .total-row {
-    border-top: 3px solid #3b82f6;
+/* Service Badges */
+.repair-details-container .service-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.repair-details-container .service-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
 }
 
-.invoice-table tfoot .total-row td {
-    padding: 20px 16px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #1e293b;
-}
-
-.invoice-table tfoot .total-row td:last-child {
-    color: #3b82f6;
-}
+/* =========================================
+   SEARCH & FILTERS
+   ========================================= */
 
-/* Invoice Actions */
-.invoice-actions {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 40px;
-    padding-top: 30px;
-    border-top: 2px solid #e2e8f0;
+.repair-details-container .services-header {
+  margin-bottom: 24px;
 }
 
-.invoice-actions button {
-    padding: 14px 28px;
-    border: none;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    font-family: 'Outfit', sans-serif;
+.repair-details-container .search-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.repair-details-container .search-input {
+  width: 100%;
+  padding: 14px 18px 14px 48px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: 1rem;
+  transition: all var(--transition-base);
+  background: #f8fafc;
 }
 
-.btn-print {
-    background: #3b82f6;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+.repair-details-container .search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-.btn-print:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
+.repair-details-container .search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 1.1rem;
 }
 
-.btn-back {
-    background: #f1f5f9;
-    color: #475569;
+.repair-details-container .zone-filter {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
 }
 
-.btn-back:hover {
-    background: #e2e8f0;
+.repair-details-container .zone-filter button {
+  padding: 10px 20px;
+  border: 2px solid var(--border-color);
+  background: white;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 0.938rem;
+  font-weight: 500;
+  transition: all var(--transition-base);
+  text-transform: capitalize;
+  color: var(--text-dark);
+}
+
+.repair-details-container .zone-filter button.active, 
+.repair-details-container .zone-filter button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
-.btn-complete {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+/* Category Headers */
+.repair-details-container .category-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+  position: relative;
+}
+
+.repair-details-container .category-header::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--primary-color);
+}
+
+/* =========================================
+   SERVICE CARDS
+   ========================================= */
+
+.repair-details-container .service-category-group {
+  margin-bottom: 36px;
+}
+
+.repair-details-container .service-category-group .services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.repair-details-container .service-card {
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-base);
+  background: white;
 }
+
+.repair-details-container .service-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
 
-.btn-complete:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+.repair-details-container .service-card.selected {
+  border-color: var(--primary-color);
+  background-color: #e3f2fd;
+}
+
+.repair-details-container .service-info h3 {
+  font-size: 1.063rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.repair-details-container .service-zone {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repair-details-container .service-card.selected .service-zone {
+  background: var(--primary-color);
+  color: white;
+}
+
+.repair-details-container .selected-checkmark {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: repairCheckPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.repair-details-container .selected-checkmark i {
+  color: #ffffff;
+  font-size: 0.938rem;
 }
 
-/* Print Styles */
-@media print {
-    .repair-header,
-    .invoice-actions {
-        display: none;
-    }
-    
-    .invoice-container {
-        box-shadow: none;
-        padding: 20px;
-    }
+/* =========================================
+   MAIN BUTTONS
+   ========================================= */
+
+.repair-details-container .btn-submit {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
+}
+
+.repair-details-container .btn-submit i {
+  color: white;
+  font-size: 1.125rem;
+}
+
+.repair-details-container .btn-submit:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .btn-submit:disabled {
+  background: var(--secondary-color);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =========================================
+   SUMMARY SECTION & LISTS
+   ========================================= */
+
+.repair-details-container .summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.repair-details-container .badge-count {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.repair-details-container .summary-list-header,
+.repair-details-container .summary-item-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 160px 60px;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.repair-details-container .summary-list-header {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.repair-details-container .summary-item-row {
+  background-color: #fff;
+  transition: all var(--transition-base);
+  border-left: 2px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
+}
+
+.repair-details-container .summary-item-row:last-child {
+  border-bottom: 2px solid var(--border-color);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.repair-details-container .summary-item-row:hover {
+  background-color: #f8fafc;
+}
+
+.repair-details-container .item-name {
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repair-details-container .item-zone-tag {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  text-align: center;
+  width: fit-content;
+  justify-self: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* =========================================
+   QUANTITY BOX & REMOVE BUTTONS
+   ========================================= */
+
+.repair-details-container .qty-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  justify-self: center;
+}
+
+.repair-details-container .qty-label {
+  font-size: 0.75rem;
+  color: var(--text-medium);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repair-details-container .qty-custom-input {
+  width: 65px;
+  padding: 6px 10px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+  transition: all var(--transition-base);
+}
+
+.repair-details-container .qty-custom-input:focus {
+  border-color: var(--primary-color);
+  background-color: #fff;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.repair-details-container .btn-remove {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  justify-self: center;
+}
+
+.repair-details-container .btn-remove:hover {
+  background-color: #ffcdd2;
+  transform: scale(1.1);
+}
+
+.repair-details-container .btn-remove i {
+  font-size: 0.938rem;
+  color: #ef233c;
+}
+
+.repair-details-container .summary-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-color);
+}
+
+.repair-details-container .total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background-color: #f8f9fa;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  border: 2px solid var(--border-color);
+}
+
+.repair-details-container .total-row span:first-child {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.repair-details-container .total-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* =========================================
+   NAVIGATION (Back Link)
+   ========================================= */
+
+.repair-details-container .back-link-container {
+  margin-bottom: 24px;
+}
+
+.repair-details-container .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.repair-details-container .back-link:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .back-link i {
+  font-size: 1rem;
+}
+
+/* =========================================
+   LOADING STATES
+   ========================================= */
+
+.repair-details-container .loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  width: 100%;
+  color: var(--text-light);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  animation: repairFadeIn 0.5s ease-in;
+}
+
+.repair-details-container .section-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.repair-details-container .spinner-mini {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: repairSpin 0.8s linear infinite;
+}
+
+/* =========================================
+   CONFIRMATION VIEW
+   ========================================= */
+
+.repair-details-container .confirmation-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+}
+
+.repair-details-container .confirmation-success {
+  background: white;
+  padding: 48px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+}
+
+.repair-details-container .success-icon {
+  font-size: 4rem;
+  color: var(--success-color);
+  margin-bottom: 24px;
+  animation: repairCheckPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.repair-details-container .confirmation-success h2 {
+  font-size: 2rem;
+  color: var(--text-dark);
+  margin-bottom: 32px;
+  justify-content: center;
+}
+
+.repair-details-container .request-summary {
+  background: var(--bg-color);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 32px;
+  text-align: left;
 }
-
-/* ========================================
+
+.repair-details-container .request-summary p {
+  margin-bottom: 12px;
+  color: var(--text-medium);
+}
+
+.repair-details-container .request-summary h4 {
+  margin: 20px 0 16px 0;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.repair-details-container .request-summary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.repair-details-container .request-summary li {
+  padding: 10px;
+  background: white;
+  margin-bottom: 8px;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.repair-details-container .qty-pill {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.repair-details-container .confirmation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.repair-details-container .btn-primary,
+.repair-details-container .btn-secondary {
+  padding: 14px 28px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all var(--transition-base);
+  border: 2px solid transparent;
+  text-decoration: none;
+}
+
+.repair-details-container .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.repair-details-container .btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .btn-secondary {
+  background: white;
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.repair-details-container .btn-secondary:hover {
+  background-color: var(--bg-color);
+  border-color: var(--primary-color);
+}
+
+/* =========================================
+   SCOPED ANIMATIONS
+   ========================================= */
+
+@keyframes repairSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes repairFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes repairCheckPop {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================
    RESPONSIVE DESIGN
-   ======================================== */
-
-@media (max-width: 1024px) {
-    .services-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-}
+   ========================================= */
 
 @media (max-width: 768px) {
-    .repair-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-        padding: 20px;
-    }
+  .repair-details-container .repair-content-wrapper {
+    padding: 20px 16px;
+  }
 
-    .repair-header h1 {
-        font-size: 1.5rem;
-    }
+  .repair-details-container .vehicle-info-section,
+  .repair-details-container .services-section,
+  .repair-details-container .summary-section {
+    padding: 20px;
+  }
 
-    .repair-content {
-        padding: 20px 15px;
-    }
+  .repair-details-container h2 {
+    font-size: 1.5rem;
+  }
 
-    section {
-        padding: 25px 20px;
-    }
+  .repair-details-container .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 
-    .services-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .repair-details-container .summary-list-header,
+  .repair-details-container .summary-item-row {
+    grid-template-columns: 1fr 80px 120px 50px;
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
 
-    .zone-filter {
-        width: 100%;
-        justify-content: flex-start;
-    }
+  .repair-details-container .zone-filter {
+    gap: 8px;
+  }
 
-    .zone-filter button {
-        flex: 1;
-        min-width: 80px;
-    }
+  .repair-details-container .zone-filter button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
 
-    .services-grid {
-        grid-template-columns: 1fr;
-    }
+  .repair-details-container .service-category-group .services-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .part-item {
-        grid-template-columns: 1fr;
-    }
+  .repair-details-container .confirmation-success {
+    padding: 32px 24px;
+  }
 
-    .confirmation-success {
-        padding: 30px 20px;
-    }
+  .repair-details-container .confirmation-actions {
+    flex-direction: column;
+  }
 
-    .success-icon {
-        font-size: 60px;
-    }
-
-    .confirmation-success h2 {
-        font-size: 24px;
-    }
-
-    .confirmation-actions {
-        flex-direction: column;
-    }
-
-    .btn-dashboard,
-    .btn-new-request {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-    }
-
-    .btn-submit {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .invoice-parties {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .invoice-actions {
-        flex-direction: column;
-    }
-
-    .invoice-actions button {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .invoice-container {
-        padding: 30px 20px;
-    }
+  .repair-details-container .btn-primary,
+  .repair-details-container .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-@media (max-width: 480px) {
-    .repair-details-container {
-        padding: 0;
-    }
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
 
-    section {
-        padding: 20px 15px;
-        border-radius: 16px;
-    }
+.repair-details-container *:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
 
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
+.repair-details-container button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
-    .invoice-container {
-        padding: 20px 15px;
-    }
+/* Print styles */
+@media print {
+  .repair-details-container .back-link-container,
+  .repair-details-container .btn-submit {
+    display: none;
+  }
+}
+.dashboard-container .loading-state,
+.repair-details-container .loading-state {
+  position: fixed;        /* Makes it stay in place relative to the viewport */
+  top: 50%;              /* Moves it 50% from the top of the screen */
+  left: 50%;             /* Moves it 50% from the left of the screen */
+  transform: translate(-50%, -50%);  /* Shifts it back by half its own width/height */
 }

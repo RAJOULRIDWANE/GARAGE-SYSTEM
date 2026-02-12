@@ -25,7 +25,7 @@
 }
 
 /* Add Button (Dashboard Specific) */
-.add-btn {
+.header-actions .add-btn {
     background-color: #2563eb;
     color: white;
     border: none;
@@ -219,7 +219,7 @@ tr:hover { background-color: #f8fafc; }
 }
 
 /* View Button */
-.view-btn {
+.clickable-row .view-btn {
     border: none;
     padding: 6px 10px;
     border-radius: 6px;

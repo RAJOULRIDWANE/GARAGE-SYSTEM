@@ -133,7 +133,7 @@ function App() {
           <Route path="/receptionist/client/:id/:name" element={<ReceptionistClientDetails />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
-          <Route path="/track-repair/:id" element={<RepairVisualizer />} />
+          <Route path="/track-repair/:repairId" element={<RepairVisualizer />} />
         </Route>
 
 

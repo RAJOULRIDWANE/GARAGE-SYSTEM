@@ -14,7 +14,7 @@ public function run()
 {
     // ... other seeders
     $this->call([
-        ServiceSeeder::class, // <--- Add this line
+        ServiceSeeder::class, 
     ]);
 }
     

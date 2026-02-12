@@ -8,30 +8,26 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Repair;
-use App\Http\Resources\RepairResource; // <--- THIS IS THE FIX
+use App\Http\Resources\RepairResource;
 
 class ReceptionistController extends Controller
 {
     public function dashboard()
     {
-        // 1. Get Mechanics (Specific columns only)
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
                         ->get(['id', 'name']);
 
-        // 2. Get Repairs with Eager Loading
-        // We use 'with' to prevent N+1 queries (Double Request issue)
-        $repairs = Repair::with(['vehicle.client', 'mechanic'])
+        // UPDATED: with('services')
+        $repairs = Repair::with(['vehicle.client', 'mechanic', 'services']) 
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // 3. Return Response using the Resource Filter
         return response()->json([
             'user' => [
-                'name' => Auth::user()->name, // Only send name and role
+                'name' => Auth::user()->name,
                 'role' => Auth::user()->role
             ], 
             'mechanics' => $mechanics,
-            // This transforms the data using the filter we created
             'repairs' => RepairResource::collection($repairs) 
         ]);
     }
@@ -39,7 +35,6 @@ class ReceptionistController extends Controller
     public function searchClients(Request $request)
     {
         $query = $request->input('query');
-        
         if (!$query) return response()->json([]);
 
         $clients = User::whereIn('role', ['Client', 'client', 'CUSTOMER', 'customer'])
@@ -56,23 +51,24 @@ class ReceptionistController extends Controller
         return response()->json($vehicles);
     }
 
+    // --- UPDATED: storeJob handles multiple services ---
     public function storeJob(Request $request)
     {
         // 1. Validate
         $validated = $request->validate([
-            'vehicle_id'  => 'required',
-            'mechanic_id' => 'required',
-            'service_id'  => 'required|exists:services,id', // <--- Validate Service exists
-            'description' => 'nullable', 
-            'cost'        => 'required', // This comes from the frontend auto-calculation
-            'date_end'    => 'required|date'
+            'vehicle_id'    => 'required',
+            'mechanic_id'   => 'required',
+            'service_ids'   => 'required|array', // Must be an array
+            'service_ids.*' => 'exists:services,id', // Each ID must exist
+            'description'   => 'nullable', 
+            'cost'          => 'required', 
+            'date_end'      => 'required|date'
         ]);
 
-        // 2. Create the Repair
+        // 2. Create Repair (Without service_id)
         $repair = Repair::create([
             'vehicle_id'     => $validated['vehicle_id'],
             'mechanic_id'    => $validated['mechanic_id'],
-            'service_id'     => $validated['service_id'], // <--- SAVE THE SERVICE ID
             'description'    => $validated['description'] ?? 'Standard Service',
             'cost'           => $validated['cost'],
             'status'         => 'Pending',
@@ -81,10 +77,12 @@ class ReceptionistController extends Controller
             'invoice_number' => 'INV-' . strtoupper(uniqid()), 
         ]);
         
-        // 3. Load Relationships (So the response includes the names, not just IDs)
-        $repair->load(['vehicle.client', 'mechanic', 'service']); 
+        // 3. Attach Services to Pivot Table
+        $repair->services()->attach($validated['service_ids']);
 
-        // 4. Return the Response
+        // 4. Load Relationships
+        $repair->load(['vehicle.client', 'mechanic', 'services']); 
+
         return response()->json([
             'message' => 'Created Successfully', 
             'repair'  => new RepairResource($repair) 
@@ -93,20 +91,24 @@ class ReceptionistController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        // 1. Validate only the allowed statuses (This is the Gatekeeper!)
         $request->validate([
-            'status' => 'required|in:Pending,In Progress,Confirmed,Canceled'
+            'status' => 'required|in:Pending,In Progress,Completed,Canceled,Delivered'
         ]);
 
         $repair = Repair::findOrFail($id);
         
-        // 2. Update
+        if ($request->status === 'Delivered' && $repair->status !== 'Completed') {
+            return response()->json([
+                'message' => 'Only completed repairs can be marked as delivered.'
+            ], 422);
+        }
+
         $repair->status = $request->status;
         $repair->save();
 
         return response()->json([
             'message' => 'Status Updated',
-            'repair'  => new RepairResource($repair)
+            'repair' => new RepairResource($repair)
         ]);
     }
 
@@ -114,48 +116,72 @@ class ReceptionistController extends Controller
     {
          $repair = Repair::find($id);
          if($repair) {
+             // Detach services before deleting (if not using cascade on DB)
+             $repair->services()->detach(); 
              $repair->delete();
              return response()->json(['message' => 'Deleted']);
          }
          return response()->json(['message' => 'Not found'], 404);
     }
-    // --- NEW: Main Dashboard (Grouped by Client) ---
+
     public function getClientsWithRepairs()
     {
-        // Fetch users who have at least one repair
         $clients = User::whereHas('repairs')
-            ->withCount('repairs') // Adds a 'repairs_count' column
-            ->with(['vehicles'])   // Optional: if you want to show vehicle count too
+            ->withCount('repairs')
+            ->with(['vehicles'])
             ->get();
 
         return response()->json($clients);
     }
 
-    // --- NEW: Drill-Down (Specific Client Repairs) ---
-public function getClientRepairs($clientId)
-{
-    $client = User::findOrFail($clientId);
+    public function getClientRepairs($clientId)
+    {
+        $client = User::findOrFail($clientId);
 
-    // 1. Fetch repairs
-    $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
-            $q->where('user_id', $clientId);
-        })
-        // 2. LOAD DATA: This pulls the full objects from other tables
-        ->with(['vehicle', 'mechanic', 'service']) 
-        ->orderBy('created_at', 'desc')
-        ->get();
+        // UPDATED: with('services')
+        $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
+                $q->where('user_id', $clientId);
+            })
+            ->with(['vehicle', 'mechanic', 'services']) 
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return response()->json([
-        'client' => $client,
-        // 3. BYPASS RESOURCE: Send $repairs directly. 
-        // Do NOT use RepairResource::collection($repairs) here.
-        'repairs' => $repairs 
-    ]);
-}
+        return response()->json([
+            'client' => $client,
+            'repairs' => $repairs 
+        ]);
+    }
 
     public function show($id)
     {
-        $repair = Repair::with(['vehicle.client', 'mechanic'])->findOrFail($id);
+        // UPDATED: with('services')
+        $repair = Repair::with(['vehicle.client', 'mechanic', 'services'])->findOrFail($id);
         return new RepairResource($repair);
+    }
+
+    public function getInvoiceDetails($id)
+    {
+        // UPDATED: with('services')
+        $repair = Repair::with([
+            'vehicle.client', 
+            'mechanic', 
+            'services', 
+            'parts' 
+        ])->findOrFail($id);
+
+        return response()->json($repair);
+    }
+
+    public function invoice($id)
+    {
+        // UPDATED: with('services')
+        $repair = Repair::with([
+            'vehicle.client', 
+            'mechanic', 
+            'services', 
+            'parts' 
+        ])->findOrFail($id);
+
+        return response()->json($repair);
     }
 }

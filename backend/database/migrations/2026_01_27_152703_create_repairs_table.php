@@ -11,39 +11,43 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // 1. Create the main repairs table (WITHOUT service_id)
         Schema::create('repairs', function (Blueprint $table) {
             $table->id();
             
-            // Link to Vehicle
+            // Foreign Keys
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
+            $table->foreignId('mechanic_id')->constrained('users')->onDelete('cascade');
             
-            // Link to Mechanic (Nullable because a job might not be assigned yet)
-            $table->foreignId('mechanic_id')->nullable()->constrained('users')->onDelete('set null');
-
-            // Job Details
+            // REMOVED: $table->foreignId('service_id')... 
+            // We removed service_id because we moved it to the pivot table below
+            
+            $table->text('description')->nullable();
+            $table->decimal('cost', 10, 2);
             $table->string('status')->default('Pending');
-            $table->text('description');
-            $table->text('mechanic_notes')->nullable();
-            $table->decimal('cost', 10, 2)->default(0.00);
+            $table->dateTime('date_entry');
+            $table->dateTime('date_end');
+            $table->string('invoice_number')->unique();
+            $table->timestamps();
+        });
 
-
-            $table->foreignId('service_id')->nullable()->constrained('services')->onDelete('set null');
-            
-            // DATES: Changed both to dateTime to store time info
-            $table->dateTime('date_entry')->nullable();
-            $table->dateTime('date_end')->nullable(); // <--- FIXED: Changed from date() to dateTime()
-            
-            $table->string('invoice_number')->nullable();
-            
+        // 2. Create the Pivot Table (Inside the SAME migration)
+        Schema::create('repair_service', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('repair_id')->constrained('repairs')->onDelete('cascade');
+            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
             $table->timestamps();
         });
     }
-
+    
+    
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
+        // Drop in reverse order
+        Schema::dropIfExists('repair_service');
         Schema::dropIfExists('repairs');
     }
 };
