@@ -167,6 +167,8 @@ const ReceptionistDashboard = () => {
     } catch (err) { showMessage("Could not load vehicles", "error"); }
   };
 
+
+
   // --- SERVICE SEARCH & ADD LOGIC ---
   const filteredServices = services.filter(service => {
      if (!serviceSearch) return true; 
@@ -454,6 +456,7 @@ const ReceptionistDashboard = () => {
                     {/* DATE INPUT */}
                     <input 
                       type="date" 
+                      min={new Date().toISOString().split('T')[0]}
                       className="form-control" 
                       value={getDatePart()} 
                       onChange={handleDatePartChange} 

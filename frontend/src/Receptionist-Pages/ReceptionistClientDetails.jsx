@@ -254,7 +254,7 @@ const ReceptionistClientDetails = () => {
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...darkText);
-    doc.text("GRAND TOTAL", 100, y);
+    doc.text("Total a payer  : ", 100, y);
     
     doc.setFontSize(14);
     doc.setTextColor(...brandColor);
