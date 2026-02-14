@@ -1,0 +1,34 @@
+.language-switcher {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.lang-select {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1b2559;
+  /* Dark blue color from logo text */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.lang-select:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.lang-select option {
+  background: white;
+  color: #1b2559;
+}
+
+/* RTL Support for the switcher itself if needed */
+[dir="rtl"] .language-switcher {
+  margin-left: 0;
+  margin-right: 15px;
+}
