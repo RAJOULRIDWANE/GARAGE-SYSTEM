@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword.jsx';
 import 'remixicon/fonts/remixicon.css';
 import ResetPassword from './pages/ResetPassword';
 import ClientDashboard from './Client-Pages/ClientDashboard.jsx';
+import AddVehicle from './Client-Pages/AddVehicle.jsx'; // ← NEW IMPORT
 import MechanicDashboard from './Mechanic-Pages/MechanicDashboard.jsx';
 import RepairDetails from './Mechanic-Pages/Repairdetails.jsx';
 import ReceptionistDashboard from './Receptionist-Pages/ReceptionistDashboard.jsx';
@@ -76,75 +77,39 @@ function App() {
 
 
         {/* CLIENT PATHS */}
-
         <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
           <Route path="/client/dashboard" element={<ClientDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={['client','Client']} />}>
+          <Route path="/client/add-vehicle" element={<AddVehicle />} />
           <Route path="/client/profile" element={<UserProfile />} />
         </Route>
 
 
         {/* MECHANIC PATHS */}
-
-
         <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/dashboard" element={<MechanicDashboard />} />
-        </Route>
-
-        {/* ← ADD THIS NEW ROUTE */}
-        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/repair/:jobId" element={<RepairDetails />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
           <Route path="/mechanic/profile" element={<UserProfile />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['mechanic', 'Mechanic']} />}>
-          <Route path="/mechanic/repair/:jobId" element={<RepairDetails />} />
-        </Route>
-
         {/* SUPERVISOR PATHS */}
-
-
         <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
           <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={['supervisor', 'Supervisor']} />}>
           <Route path="/supervisor/profile" element={<UserProfile />} />
         </Route>
 
 
+
         {/* RECEPTIONIST PATHS */}
-
-
         <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/receptionist/dashboard" element={<ReceptionistDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/receptionist/profile" element={<UserProfile />} />
-        </Route>
-        
-        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/receptionist/client/:id/:name" element={<ReceptionistClientDetails />} />
-        </Route>
-        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
           <Route path="/track-repair/:repairId" element={<RepairVisualizer />} />
         </Route>
 
-
         {/* PARTS-MANAGER PATHS */}
-
-
         <Route element={<ProtectedRoute allowedRoles={['parts_manager', 'Parts_manager']} />}>
           <Route path="/partsmanager/dashboard" element={<PartsManagerDashboard />} />
-        </Route>
-
-         <Route element={<ProtectedRoute allowedRoles={['parts_manager', 'Parts_manager']} />}>
           <Route path="/partsmanager/profile" element={<UserProfile />} />
         </Route>
 
